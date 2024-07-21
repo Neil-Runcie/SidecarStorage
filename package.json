@@ -1,0 +1,25 @@
+{
+  "name": "sidecarstorage",
+  "version": "0.1.0",
+  "description": "Storage data structures",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Neil-Runcie/SidecarStorage.git"
+  },
+  "keywords": [
+    "storage"
+  ],
+  "author": "Neil Runcie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Neil-Runcie/SidecarStorage/issues"
+  },
+  "homepage": "https://github.com/Neil-Runcie/SidecarStorage#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
