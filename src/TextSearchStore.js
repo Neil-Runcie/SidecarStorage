@@ -17,8 +17,8 @@ module.exports = {
             this.numberOfStrings = 0;
             this.maxStrings = Number.MAX_SAFE_INTEGER;
             
-            this.modifiedSinceLastSave = true;
-            this.toBeSaved = true;
+            //this.modifiedSinceLastSave = true;
+            //this.toBeSaved = true;
         }
 
         addString(stringToBeAdded) {
@@ -50,6 +50,7 @@ module.exports = {
             // traverse tree and update potentialMatch string arrays
             let nodeTraverser = this.root;
 
+            let characters = stringToBeAdded.split('');
             let currentIndex = 0;
             while (currentIndex < characters.length) {
 
@@ -157,7 +158,7 @@ module.exports = {
         }
 
         changeDeletionPriority(deletionPriority) {
-            if (typeof deletionPriority != "string" || !this.AllowedDeletionPriorities.includes(deletionPriority)) {
+            if (typeof deletionPriority != "string" || !allowedPriorities.includes(deletionPriority)) {
                 deletionPriority = "LRU";
             }
 
@@ -182,10 +183,11 @@ module.exports = {
             }
         }
 
-
+        /*
         isToBeSaved() {
             return (this.toBeSaved && this.modifiedSinceLastSave);
         }
+        */
     }
 }
 

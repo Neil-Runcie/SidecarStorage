@@ -2,7 +2,7 @@ const db = require('./Database.js');
 
 test('Validate KeyValueStore creation', () => {
     let testDB = new db.Database("Test");
-    testDB.createKeyValueStore("testKVS");
+    testDB.createKeyValueStore("testKVS", ["test"]);
 
     let allDBExpectation = ["testKVS"];
     expect(JSON.stringify(testDB.getKeyValueStoreNames())).toEqual(JSON.stringify(allDBExpectation));
@@ -18,7 +18,7 @@ test('Validate TextSearchStore creation', () => {
 
 test('Validate store name retrieval', () => {
     let testDB = new db.Database("Test");
-    testDB.createKeyValueStore("testKVS");
+    testDB.createKeyValueStore("testKVS", ["test"]);
     testDB.createTextSearchStore("testTSS");
 
     let allDBExpectation = ["testKVS", "testTSS"];

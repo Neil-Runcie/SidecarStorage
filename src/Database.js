@@ -25,10 +25,8 @@ module.exports = {
         createKeyValueStore(name, keys) {
             if ((typeof name) != "string")
                 return;
-            if ((typeof keys) != "object")
-                return;
 
-            this.keyValueStores.set(name, new StoreMgmtWrapper(new keyValueStore.KeyValueStore(keys)));
+            this.keyValueStores.set(name, new keyValueStore.KeyValueStore(keys));
             this.numberOfKVStores++;
         }
 
@@ -36,7 +34,7 @@ module.exports = {
             if ((typeof name) != "string")
                 return;
 
-            this.textSearchStores.set(name, new StoreMgmtWrapper(new textSearchStore.TextSearchStore()));
+            this.textSearchStores.set(name, new textSearchStore.TextSearchStore());
             this.numberOfTSStores++;
         }
 
@@ -76,14 +74,14 @@ module.exports = {
             if ((typeof name) != "string")
                 return;
 
-            return this.keyValueStores.get(name).store;
+            return this.keyValueStores.get(name);
         }
 
         getTextSearchStore(name) {
             if ((typeof name) != "string")
                 return;
 
-            return this.textSearchStores.get(name).store;
+            return this.textSearchStores.get(name);
         }
 
         //////// Deletion of available store objects by name
@@ -126,12 +124,5 @@ module.exports = {
 
             this.toBeSaved = status;
         }
-    }
-}
-
-class StoreMgmtWrapper {
-
-    constructor(store) {
-        this.store = store;
     }
 }

@@ -5,26 +5,24 @@ module.exports = {
         // keys is an array of strings that will be used as keys to the table
         constructor(keys) {
             // Cannot proceed with invalid keys
-            if (!CreationKeysAreValid(keys));
+            if (!creationKeysAreValid(keys))
                 throw new Error("Invalid keys were provided. Expected array of non-empty strings");
 
             this.keys = keys;
             this.map = new Map();
-            this.modifiedSinceLastSave = true;
-            this.toBeSaved = true;
         }
 
 
         // Add new data to store based on keys object
         // Will only add new data and skip if data is already present for keys
         // returns false if no addition of data occured and true otherwise
-        Add(keys, data) {
-            if (!AreKeysValid(keys, this.keys))
+        add(keys, data) {
+            if (data == undefined || !areKeysValid(keys, this.keys))
                 return false;
 
             let keyString;
             try {
-                keyString = CreateCommaSeparatedKeyString(keys, this.keys);
+                keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
                 return false;
@@ -41,13 +39,13 @@ module.exports = {
         // Read data from store based on keys object
         // If data does not exist return undefined 
         // returns data from map associated with provided keys
-        Read(keys) {
-            if (!AreKeysValid(keys, this.keys))
+        read(keys) {
+            if (!areKeysValid(keys, this.keys))
                 return undefined;
 
             let keyString;
             try {
-                keyString = CreateCommaSeparatedKeyString(keys, this.keys);
+                keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
                 return undefined;
@@ -60,15 +58,15 @@ module.exports = {
         }
 
         // Return all data from store as an array
-        ReadAll() {
-            return this.map.values().toArray();
+        readAll() {
+            return Array.from(this.map.values());
         }
 
         // Update data to store based on keys object
         // Will only update existing data and skip if data is not already present for keys
         // returns false if no update of data occured and true otherwise
-        Update(keys, data) {
-            if (!AreKeysValid(keys, this.keys))
+        update(keys, data) {
+            if (data == undefined || !areKeysValid(keys, this.keys))
                 return false;
 
             let keyString;
@@ -90,13 +88,13 @@ module.exports = {
         // Add or update data based on keys object
         // Will add or update data depending on whether data is present for associated keys or not
         // returns false if no update of data occured and true otherwise
-        AddOrUpdate(keys, data) {
-            if (!AreKeysValid(keys, this.keys))
+        addOrUpdate(keys, data) {
+            if (data == undefined || !areKeysValid(keys, this.keys))
                 return false;
 
             let keyString;
             try {
-                keyString = CreateCommaSeparatedKeyString(keys, this.keys);
+                keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
                 return false;
@@ -109,13 +107,13 @@ module.exports = {
 
         // Delete data and associated keys based on keys object
         // Returns true if deleted, false if it does not exist
-        Delete(keys) {
-            if (!AreKeysValid(keys, this.keys))
+        delete(keys) {
+            if (!areKeysValid(keys, this.keys))
                 return false;
 
             let keyString;
             try {
-                keyString = CreateCommaSeparatedKeyString(keys, this.keys);
+                keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
                 return false;
@@ -174,23 +172,9 @@ module.exports = {
             return numberOfRecordsDeleted;
         }
 
-        // Store saving logic
-        needsToBeSaved() {
-            return (this.toBeSaved && this.modifiedSinceLastSave);
+        getNumberOfEntries() {
+            return this.map.size;
         }
-
-        setSavedFlag() {
-            this.modifiedSinceLastSave = false;
-        }
-
-        // status should be true or false
-        setSaveStatus(status) {
-            if ((typeof name) != "boolean")
-                return;
-
-            this.toBeSaved = status;
-        }
-
     }
 }
 
@@ -198,18 +182,26 @@ module.exports = {
 
 ///////////// Private functions for KeyValueStore class
 
-function AreKeysValid(providedKeys, expectedKeys) {
+// Uses providedKeys object and expectedKeys array to see if provided keys are valid
+// Returns false if not valid and true otherwise
+function areKeysValid(providedKeys, expectedKeys) {
     if (typeof providedKeys !== "object")
         return false;
 
-    let providedKeys = Object.keys(keys);
-    if (expectedKeys.length > providedKeys.length)
-        return false;
+    for (let key of expectedKeys) {
+        if (providedKeys[key] === undefined)
+            return false;
+        if ((typeof providedKeys[key]) != "string" || providedKeys[key] == "") {
+            return false;
+        }
+    }
 
     return true;
 }
 
-function CreateCommaSeparatedKeyString(providedKeys, expectedKeys) {
+// Uses providedKeys object and expectedKeys array to build a string of comma separated key
+// Returns the comma separated key string and throws an error if it cannot be done
+function createCommaSeparatedKeyString(providedKeys, expectedKeys) {
     let keyString = "";
 
     for (let i = 0; i < expectedKeys.length; i++) {
@@ -224,15 +216,17 @@ function CreateCommaSeparatedKeyString(providedKeys, expectedKeys) {
     return keyString;
 }
 
-// Validate if passed keys parameter is an array containing only non-empty strings
-function CreationKeysAreValid(keys) {
+// Validate if passed keys array parameter is an array containing only non-empty strings
+// Returns false if keys array is not valid and true otherwise
+function creationKeysAreValid(keys) {
     if (!Array.isArray(keys) || keys.length == 0) {
         return false;
     }
     for (let key of keys) {
-        if ((typeof key) != "string" || key == "") {
+        if (typeof key != "string" || key == "") {
             return false;
         }
     }
+
     return true;
 }
