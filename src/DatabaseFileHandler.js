@@ -7,6 +7,7 @@ module.exports = {
     DatabaseFileHandler: class DatabaseFileHandler {
 
         constructor(storageLocation) {
+            this.storageLocation = __dirname + storageLocation;
             this.metaDataLocation = __dirname + storageLocation + "\\meta.pyr";
             this.databaseLocation = __dirname + storageLocation + "\\db_";
 
@@ -16,6 +17,8 @@ module.exports = {
                 this.loadConfiguration();
             }
             else {
+                if (!fs.existsSync(this.storageLocation))
+                    fs.mkdirSync(this.storageLocation);
                 this.saveConfiguration();
             }
         }
@@ -50,7 +53,9 @@ module.exports = {
             for (let file of mappedStores.values()) {
                 if (file.endsWith(extension)) {
                     if (fs.existsSync(databasePath + "\\" + file)) {
-                        stores.push(serial.TextToObject(fs.readFileSync(databasePath + "\\" + file, "utf-8")));
+
+                        let storeInfo = { name: file.slice(0, file.lastIndexOf(".")), fileData: serial.TextToObject(fs.readFileSync(databasePath + "\\" + file, "utf-8")) };
+                        stores.push(storeInfo);
                     }
                 }
             }
@@ -110,14 +115,21 @@ module.exports = {
 
         saveConfiguration() {
             let metaDataString = serial.ObjectToText(this.configMetaData);
-            fs.writeFileSync(this.metaDataLocation, metaDataString, { flag: 'w' }, function (err) {
+            fs.writeFileSync(this.metaDataLocation, metaDataString, function (err) {
                 if (err)
                     throw new Error("Unable to save database changes to disk");
             });
         }
 
+        storageExists() {
+            if (fs.existsSync(this.storageLocation))
+                return true;
+            return false;
+        }
         
-
+        deleteAllStorage() {
+            fs.rmSync(this.storageLocation, { recursive: true, force: true });
+        }
 
     }
 }

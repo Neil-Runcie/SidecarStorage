@@ -4,7 +4,7 @@
   "description": "Storage data structures",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "node --expose-gc --no-compilation-cache ./node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",

@@ -20,14 +20,16 @@ module.exports = {
 
             if (storageMethod == "LOCALDISK")
                 this.storageHandler = new diskIO.DatabaseFileHandler(config.storageConfig.StorageLocation);
-            this.allowedExtensions = config.storageConfig.extensionObject;
+            this.allowedExtensions = config.storageConfig.Extensions;
         }
 
         saveDatabases(mapOfDatabases) {
             // database[0] is the database name. database[1] is the object.
             for (let database of mapOfDatabases) {
-                if (database[1].isToBeSaved())
+                if (database[1].needsToBeSaved()) {
                     this.saveDatabase(database[0], database[1]);
+                    database[1].setSavedFlag();
+                }
             }
         }
 
@@ -37,13 +39,11 @@ module.exports = {
             // Stores are a map. store[0] is the store name. store[1] is the object. 
             // Save key values stores to associated database
             for (let store of database.keyValueStores) {
-                if (store[1].isToBeSaved())
-                    this.saveStore(name, store[0], this.allowedExtensions.KeyValueStoreExtension, store[1]);
+                this.saveStore(name, store[0], this.allowedExtensions.KeyValueStoreExtension, store[1]);
             }
             // Save text search stores to associated database
             for (let store of database.textSearchStores) {
-                if (store[1].isToBeSaved())
-                    this.saveStore(name, store[0], this.allowedExtensions.TextSearchStoreExtension, store[1]);
+                this.saveStore(name, store[0], this.allowedExtensions.TextSearchStoreExtension, store[1]);
             }
         }
 
@@ -70,15 +70,16 @@ module.exports = {
                 dbMap.set(dbName, newDatabase);
 
                 let kvObjects = this.storageHandler.loadStores(dbName, this.allowedExtensions.KeyValueStoreExtension);
+
                 for (let obj of kvObjects) {
-                    newDatabase.createKeyValueStore(obj.name, {});
-                    Object.assign(newDatabase.getKeyValueStore(obj.name), obj);
+                    newDatabase.createKeyValueStore(obj.name, obj.fileData.keys);
+                    Object.assign(newDatabase.getKeyValueStore(obj.name), obj.fileData);
                 }
 
                 let tsObjects = this.storageHandler.loadStores(dbName, this.allowedExtensions.TextSearchStoreExtension);
                 for (let obj of tsObjects) {
                     newDatabase.createTextSearchStore(obj.name);
-                    Object.assign(newDatabase.getTextSearchStore(obj.name), obj);
+                    Object.assign(newDatabase.getTextSearchStore(obj.name), obj.fileData);
                 }
             }
 
@@ -87,6 +88,14 @@ module.exports = {
 
         loadStores(extension) {
             this.storageHandler.loadStores(databaseName, extension);
+        }
+
+        storageExists() {
+            return this.storageHandler.storageExists()
+        }
+
+        deleteAllStorage() {
+            this.storageHandler.deleteAllStorage();
         }
 
     }

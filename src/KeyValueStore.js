@@ -6,7 +6,7 @@ module.exports = {
         constructor(keys) {
             // Cannot proceed with invalid keys
             if (!creationKeysAreValid(keys))
-                throw new Error("Invalid keys were provided. Expected array of non-empty strings");
+                throw new TypeError("Invalid keys were provided. Expected array of non-empty strings");
 
             this.keys = keys;
             this.map = new Map();
@@ -17,15 +17,17 @@ module.exports = {
         // Will only add new data and skip if data is already present for keys
         // returns false if no addition of data occured and true otherwise
         add(keys, data) {
-            if (data == undefined || !areKeysValid(keys, this.keys))
-                return false;
+            if (data == undefined)
+                throw new TypeError("The add function does not accept undefined data");
+            if (!areKeysValid(keys, this.keys))
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
 
             let keyString;
             try {
                 keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
-                return false;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
             }
 
             if (this.map.has(keyString))
@@ -41,14 +43,14 @@ module.exports = {
         // returns data from map associated with provided keys
         read(keys) {
             if (!areKeysValid(keys, this.keys))
-                return undefined;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
 
             let keyString;
             try {
                 keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
-                return undefined;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
             }
 
             if (!this.map.has(keyString))
@@ -66,15 +68,17 @@ module.exports = {
         // Will only update existing data and skip if data is not already present for keys
         // returns false if no update of data occured and true otherwise
         update(keys, data) {
-            if (data == undefined || !areKeysValid(keys, this.keys))
-                return false;
+            if (data == undefined)
+                throw new TypeError("The update function does not accept undefined data");
+            if (!areKeysValid(keys, this.keys))
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
 
             let keyString;
             try {
-                keyString = CreateCommaSeparatedKeyString(keys, this.keys);
+                keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
-                return false;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
             }
 
             if (!this.map.has(keyString))
@@ -89,15 +93,17 @@ module.exports = {
         // Will add or update data depending on whether data is present for associated keys or not
         // returns false if no update of data occured and true otherwise
         addOrUpdate(keys, data) {
-            if (data == undefined || !areKeysValid(keys, this.keys))
-                return false;
+            if (data == undefined)
+                throw new TypeError("The addOrUpdate function does not accept undefined data");
+            if (!areKeysValid(keys, this.keys))
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
 
             let keyString;
             try {
                 keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
-                return false;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
             }
 
             let dataDeepCopy = JSON.parse(JSON.stringify(data));
@@ -109,14 +115,14 @@ module.exports = {
         // Returns true if deleted, false if it does not exist
         delete(keys) {
             if (!areKeysValid(keys, this.keys))
-                return false;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
 
             let keyString;
             try {
                 keyString = createCommaSeparatedKeyString(keys, this.keys);
             }
             catch {
-                return false;
+                throw new Error("The provided keys are not valid for this KeyValueStore object");
             }
 
             if (this.map.has(keyString))
@@ -128,7 +134,7 @@ module.exports = {
         // Otherwise return data corresponding to data that returned true from searchCondition function
         conditionalRead(searchCondition) {
             if (typeof searchCondition !== "function")
-                return [];
+                throw new TypeError("The conditionalRead function can only accept a function that returns a boolean value as a parameter");
 
             let searchResult = [];
             
@@ -152,7 +158,7 @@ module.exports = {
         // Otherwise delete data corresponding to data that returned true from searchCondition function and return the number of records deleted
         conditionalDelete(searchCondition) {
             if (typeof searchCondition !== "function")
-                return 0;
+                throw new TypeError("The conditionalRead function can only accept a function that returns a boolean value as a parameter");
 
             let numberOfRecordsDeleted = 0;
 
@@ -205,8 +211,8 @@ function createCommaSeparatedKeyString(providedKeys, expectedKeys) {
     let keyString = "";
 
     for (let i = 0; i < expectedKeys.length; i++) {
-        if (providedKeys[expectedKeys[i]] === undefined)
-            throw new Error(`key ${expectedKeys} was not provided`);
+        if (providedKeys[expectedKeys[i]] === undefined) 
+            throw new Error(`key ${expectedKeys[i]} was not provided`);
 
         keyString += providedKeys[expectedKeys[i]];
         if (i != expectedKeys.length - 1)

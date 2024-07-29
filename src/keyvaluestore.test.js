@@ -31,13 +31,13 @@ test('Invalid key value data insertions', () => {
     let keyObjectArr = ["check", "check2"];
     let keyObjectEmpty = { key1: "check", key2: "" };
 
-    expect(kvs.add()).toBeFalsy();
-    expect(kvs.add(keyObject)).toBeFalsy();
-    expect(kvs.add(keyObjectArr, 3)).toBeFalsy();
-    expect(kvs.read(keyObjectArr)).toEqual(undefined);
+    expect(() => kvs.add()).toThrow(new TypeError("The add function does not accept undefined data"));
+    expect(() => kvs.add(keyObject)).toThrow(new TypeError("The add function does not accept undefined data"));
+    expect(() => kvs.add(keyObjectArr, 3)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
+    expect(() => kvs.read(keyObjectArr)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
 
-    expect(kvs.add(keyObjectEmpty, 3)).toBeFalsy();
-    expect(kvs.read(keyObjectEmpty)).toEqual(undefined);
+    expect(() => kvs.add(keyObjectEmpty, 3)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
+    expect(() => kvs.read(keyObjectEmpty)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
 
 });
 
@@ -66,18 +66,18 @@ test('Invalid key value data updates', () => {
     let keyObjectArr = ["check", "check2"];
     let keyObjectEmpty = { key1: "check", key2: "" };
 
-    expect(kvs.update()).toBeFalsy();
-    expect(kvs.update(keyObject)).toBeFalsy();
-    expect(kvs.update(keyObjectArr, 3)).toBeFalsy();
-    expect(kvs.read(keyObjectArr)).toEqual(undefined);
+    expect(() => kvs.update()).toThrow(new TypeError("The update function does not accept undefined data"));
+    expect(() => kvs.update(keyObject)).toThrow(new TypeError("The update function does not accept undefined data"));
+    expect(() => kvs.update(keyObjectArr, 3)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
+    expect(() => kvs.read(keyObjectArr)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
 
     kvs.add(keyObject, 3);
 
     
-    expect(kvs.addOrUpdate()).toBeFalsy();
-    expect(kvs.addOrUpdate(keyObject)).toBeFalsy();
-    expect(kvs.addOrUpdate(keyObjectEmpty, 5)).toBeFalsy();
-    expect(kvs.read(keyObjectEmpty)).toEqual(undefined);
+    expect(() => kvs.addOrUpdate()).toThrow(new TypeError("The addOrUpdate function does not accept undefined data"));
+    expect(() => kvs.addOrUpdate(keyObject)).toThrow(new TypeError("The addOrUpdate function does not accept undefined data"));
+    expect(() => kvs.addOrUpdate(keyObjectEmpty, 5)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
+    expect(() => kvs.read(keyObjectEmpty)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
 
 
     let valueExpectation = [ 3 ];
@@ -112,9 +112,9 @@ test('Invalid key value data deletions', () => {
     kvs.add(keyObject, 3);
     kvs.addOrUpdate(keyObject2, "testing");
 
-    expect(kvs.delete()).toBeFalsy();
-    expect(kvs.delete(keyObjectArr)).toBeFalsy();
-    expect(kvs.delete(keyObjectEmpty)).toBeFalsy();
+    expect(() => kvs.delete()).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
+    expect(() => kvs.delete(keyObjectArr)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
+    expect(() => kvs.delete(keyObjectEmpty)).toThrow(new Error("The provided keys are not valid for this KeyValueStore object"));
 
 
     let valueExpectation = [3, "testing"];
@@ -166,3 +166,7 @@ test('Conditional key value data deletion', () => {
     expect(kvs.getNumberOfEntries()).toEqual(1);
 
 });
+
+afterAll(() => {
+    global.gc && global.gc()
+})

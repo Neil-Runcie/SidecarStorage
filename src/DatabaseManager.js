@@ -24,10 +24,20 @@ module.exports = {
         }
 
         // Sets storage object based on provided storageMethod string
-        EnableSavingAndLoading(storageMethod) {
-            this.saveAndLoadEnabled = true;
-            this.storageHandler = new dstore.DataStorage(storageMethod);
+        enableSavingAndLoading(storageMethod) {
+            if (this.saveAndLoadEnabled == false && JSON.stringify(this.storageHandler) =="{}") {
+                this.saveAndLoadEnabled = true;
+                this.storageHandler = new dstore.DataStorage(storageMethod);
+            }
         }
+
+        savingAndLoadingIsEnabled() {
+            if (this.saveAndLoadEnabled == true && JSON.stringify(this.storageHandler) != "{}") {
+                return true;
+            }
+            return false;
+        }
+
 
         // creates a database object and maps it to databases class variable
         createDatabase(name) {
@@ -68,31 +78,45 @@ module.exports = {
 
         // load databases from persistent storage if no databases records are present
         loadDatabasesFromStorage() {
-            if (JSON.stringify(this.saveAndLoadEnabled) == false)
-                return;
+            if (!this.savingAndLoadingIsEnabled())
+                throw new Error("Saving and loading has not been enabled");
 
-            if (this.databases.size <= 0)
+            if (this.databases.size <= 0) {
                 this.databases = this.storageHandler.loadDatabases();
+                return true;
+            }
+            return false;
         }
 
         // load databases from persistent storage
         forceLoadDatabasesFromStorage() {
-            if (JSON.stringify(this.saveAndLoadEnabled) == false)
-                return;
+            if (!this.savingAndLoadingIsEnabled())
+                throw new Error("Saving and loading has not been enabled");
 
             this.databases = this.storageHandler.loadDatabases();
         }
 
         // save databases to persistent storage
         saveDatabasesToStorage() {
-            if (JSON.stringify(this.saveAndLoadEnabled) == false)
-                return;
+            if (!this.savingAndLoadingIsEnabled())
+                throw new Error("Saving and loading has not been enabled");
 
             if (this.databasesToBeDeleted.size != 0)
                 this.storageHandler.deleteDatabases(this.databasesToBeDeleted);
 
             if (this.databases.size != 0)
                 this.storageHandler.saveDatabases(this.databases);
+        }
+
+        clearAllStoredData() {
+            if (!this.savingAndLoadingIsEnabled())
+                throw new Error("Saving and loading has not been enabled");
+
+            this.storageHandler.deleteAllStorage();
+        }
+
+        clearInstance() {
+            instance = undefined;
         }
 
 
