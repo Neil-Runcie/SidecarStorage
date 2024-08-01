@@ -28,7 +28,6 @@ module.exports = {
             for (let database of mapOfDatabases) {
                 if (database[1].needsToBeSaved()) {
                     this.saveDatabase(database[0], database[1]);
-                    database[1].setSavedFlag();
                 }
             }
         }

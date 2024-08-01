@@ -1,8 +1,13 @@
 const dbc = require('./TextSearchStore');
 
+beforeEach(() => {
+    global.gc && global.gc()
+})
+
 afterEach(() => {
     global.gc && global.gc()
 })
+
 
 test('Validate trie string insertions', () => {
     let trie = new dbc.TextSearchStore();
@@ -15,7 +20,7 @@ test('Validate trie string insertions', () => {
     expect(trie.getNumberOfStrings()).toBe(3);
 });
 
-/*test('Validate trie contains string', () => {
+test('Validate trie contains string', () => {
     let trie = new dbc.TextSearchStore();
     trie.addString("test");
     trie.addString("second");
@@ -27,40 +32,40 @@ test('Validate trie string insertions', () => {
 
 });
 
+
 test('Validate trie string deletions', () => {
     let trie = new dbc.TextSearchStore();
     trie.addString("test");
-    trie.addString("second");
+    trie.addString("testing1");
     trie.addString("test2");
+    trie.addString("second");
     trie.deleteString("test");
 
-    //let expectation = ["second", "test2"];
-    //expect(JSON.stringify(trie.getAllStrings())).toEqual(JSON.stringify(expectation));
-    //expect(trie.getNumberOfStrings()).toBe(2);
 
     trie.setMaxDeletionLimit(2, "AMOUNT");
     trie.setMaxNumberOfStrings(5);
+    
 
     trie.addString("test3");
     trie.addString("test4");
+    trie.addString("tested2345");
+
+    let expectationAfterDeletion = ["testing1", "test2", "second", "tested2345"];
+    expect(JSON.stringify(trie.getAllStrings())).toEqual(JSON.stringify(expectationAfterDeletion)); 
     expect(trie.getNumberOfStrings()).toBe(4);
-    trie.addString("test5");
 
-
-    let expectationAfterDeletion = ["second", "test2", "test5"];
-    expect(JSON.stringify(trie.getAllStrings())).toEqual(JSON.stringify(expectationAfterDeletion));
-    expect(trie.getNumberOfStrings()).toBe(3);
+    trie.changeDeletionPriority("Longest");
+    trie.setMaxNumberOfStrings(3);
 
     trie.setMaxDeletionLimit(50, "PERCENTAGE");
 
-    trie.addString("test6");
-    trie.addString("test7");
+    trie.addString("test1");
 
-    let expectationAfterDeletion2 = ["second", "test2", "test7"];
+    let expectationAfterDeletion2 = ["test2", "test1"];
     expect(JSON.stringify(trie.getAllStrings())).toEqual(JSON.stringify(expectationAfterDeletion2));
-    expect(trie.getNumberOfStrings()).toBe(3);
-
+    expect(trie.getNumberOfStrings()).toBe(2);
 });
+
 
 test('Validate trie search suggestions', () => {
     let trie = new dbc.TextSearchStore();
@@ -273,4 +278,4 @@ test('Validate "Lexicographical" read', () => {
     let readExpectation = ["testing", "test2"];
     expect(JSON.stringify(trie.getPossibleMatches("test"))).toEqual(JSON.stringify(readExpectation));
 
-});*/
+});

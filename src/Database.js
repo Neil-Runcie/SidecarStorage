@@ -15,7 +15,6 @@ module.exports = {
             this.textSearchStores = new Map();
             this.TSstoresToBeDeleted = new Set();
 
-            this.modifiedSinceLastSave = true;
             this.toBeSaved = true;
         }
 
@@ -23,19 +22,26 @@ module.exports = {
 
         // keys must be an object
         createKeyValueStore(name, keys) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The createKeyValueStore function expects a non-empty string as the first parameter");
+            if (this.keyValueStores.has(name))
+                throw new Error("A Key Value Store with this name has already been created in this database");
 
+            // Type checking of keys handled by KeyValueStore
             this.keyValueStores.set(name, new keyValueStore.KeyValueStore(keys));
-            this.numberOfKVStores++;
+
+            return this.keyValueStores.get(name);
         }
 
         createTextSearchStore(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The createTextSearchStore function expects a non-empty string as the parameter");
+            if (this.textSearchStores.has(name))
+                throw new Error("A Text Search Store with this name has already been created in this database");
 
             this.textSearchStores.set(name, new textSearchStore.TextSearchStore());
-            this.numberOfTSStores++;
+
+            return this.textSearchStores.get(name);
         }
 
 
@@ -71,56 +77,54 @@ module.exports = {
         //////// Retrieval of available store objects by name
 
         getKeyValueStore(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The getKeyValueStore function expects a non-empty string as the parameter");
 
             return this.keyValueStores.get(name);
         }
 
         getTextSearchStore(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The getTextSearchStore function expects a non-empty string as the parameter");
 
             return this.textSearchStores.get(name);
         }
 
         //////// Deletion of available store objects by name
 
+        // return true if a value has been deleted and false otherwise
         deleteKeyValueStore(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The deleteKeyValueStore function expects a non-empty string as the parameter");
 
             if (this.keyValueStores.has(name)) {
-                this.keyValueStores.delete(name);
                 this.KVstoresToBeDeleted.add(name);
+                return this.keyValueStores.delete(name);
             }
+            return false;
         }
 
-
+        // return true if a value has been deleted and false otherwise
         deleteTextSearchStore(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The deleteTextSearchStore function expects a non-empty string as the parameter");
 
             if (this.textSearchStores.has(name)) {
-                this.textSearchStores.delete(name);
                 this.TSstoresToBeDeleted.add(name);
+                return this.textSearchStores.delete(name);
             }
+            return false;
         }
-
 
         // Database saving logic
         needsToBeSaved() {
-            return (this.toBeSaved && this.modifiedSinceLastSave);
-        }
-
-        setSavedFlag() {
-            this.modifiedSinceLastSave = false;
+            return this.toBeSaved;
         }
 
         // status should be true or false
         setSaveStatus(status) {
-            if ((typeof name) != "boolean")
-                return;
+            if ((typeof status) != "boolean")
+                throw new TypeError("The setSaveStatus function expects a boolean value as the parameter");
 
             this.toBeSaved = status;
         }

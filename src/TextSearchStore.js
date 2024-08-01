@@ -1,5 +1,6 @@
 
-var allowedPriorities = ["MRU", "LRU", "Shortest", "Longest", "Lexicographically"]
+var allowedPriorities = ["MRU", "LRU", "Shortest", "Longest", "Lexicographically"];
+// var allowedMethods = ["AMOUNT", "PERCENTAGE"];
 
 module.exports = {
     TextSearchStore: class TextSearchStore {
@@ -7,13 +8,15 @@ module.exports = {
         constructor() {
             this.root = new TrieNode();
 
+            // The comparison function used to sort descriptorsForReading in the TrieNode object
             this.readComparison = MRUComparison;
             this.maxReadLimit = Number.MAX_SAFE_INTEGER;
             this.readMethod = "AMOUNT";
 
+            // The comparison function used to sort descriptorsForDeletion array member variable
             this.descriptorsForDeletion = [];
             this.deletionComparison = LRUComparison;
-            this.maxDeletionLimit = 10;
+            this.maxDeletionLimit = 100;
             this.deletionMethod = "AMOUNT";
 
             this.maxStrings = Number.MAX_SAFE_INTEGER;
@@ -40,7 +43,7 @@ module.exports = {
                     SortStringDescriptors(this.descriptorsForDeletion, this.deletionComparison);
             }
             else { // If string does not already exists in this object
-
+                
                 if (this.descriptorsForDeletion.length >= this.maxStrings) {
                     this.deleteStringsBasedOnPriority();
                 }
@@ -77,7 +80,7 @@ module.exports = {
         }
 
         // Adds a string to the trie like data structure if it is a nonempty string
-        // If the string can be added then it will return true otherwise it returns false
+        // If the non-empty string can found then it will return true otherwise it returns false
         containsString(stringToLookFor) {
             if ((typeof stringToLookFor) != "string")
                 throw new TypeError("The containsString function can only accept strings as parameters");
@@ -107,40 +110,48 @@ module.exports = {
         // deleteStringsBasedOnPriority calculates the number of strings to be deleted based on priority and deletes each one
         deleteStringsBasedOnPriority() {
             while (this.descriptorsForDeletion.length > this.maxStrings) {
-                const stringDescriptor = this.descriptorsForDeletion.pop();
+                const stringDescriptor = this.descriptorsForDeletion[this.descriptorsForDeletion.length-1];
                 this.deleteString(stringDescriptor.string);
             }
 
             let numberOfStringsToDelete = getNumberOfStringsToDelete(this.descriptorsForDeletion, this.maxDeletionLimit, this.deletionMethod);
 
             for (let i = 0; i < numberOfStringsToDelete; i++) {
-                const stringDescriptor = this.descriptorsForDeletion.pop();
+                const stringDescriptor = this.descriptorsForDeletion[this.descriptorsForDeletion.length - 1];
                 this.deleteString(stringDescriptor.string);
             }
         }
 
         
         // deleteString takes a nonempty string and deletes it if it is present in the trie structure
+        // If the non-empty string is deleted then it will return true otherwise it returns false
         deleteString(stringToBeDeleted) {
             if ((typeof stringToBeDeleted) != "string")
                 throw new TypeError("The deleteString function can only accept strings as parameters");
             if (!this.containsString(stringToBeDeleted))
-                return;
+                return false;
             if (stringToBeDeleted == "")
-                return;
-           // console.log(stringToBeDeleted);
+                return false;
+
+            for (let i = this.descriptorsForDeletion.length - 1; i < this.descriptorsForDeletion.length; i--) {
+                if (this.descriptorsForDeletion[i].string == stringToBeDeleted) {
+                    this.descriptorsForDeletion.splice(i, 1);
+                    break;
+                }
+            }
             // Traverse through the trie and remove the string from every descriptorsForReading array in nodes in the path of the provided stringToBeDeleted
             let nodeTraverser = this.root;
             let characters = stringToBeDeleted.split('');
             let currentIndex = 0;
-
             while (currentIndex < characters.length) {
 
                 // If there is only one string remaining then delete the reference from the node thereby trimming the trie entirely from that point
                 if (nodeTraverser.descriptorsForReading.length == 1) {
                     let nodeToDelete = nodeTraverser;
-                    nodeToDelete.characters.clear();
+                    nodeTraverser.descriptorsForReading.splice(0, 1);
                     nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
+                    nodeToDelete.characters.clear();
+                    currentIndex++;
                     continue;
                 }
 
@@ -156,6 +167,8 @@ module.exports = {
                 currentIndex++;
             }
             nodeTraverser.EndOfWord = false;
+
+            return true;
 
         }
 
@@ -227,7 +240,7 @@ module.exports = {
                 // 1 to 100 is the acceptable range for a percentage
                 if (newLimit < 1 || newLimit > 100)
                     throw new Error("Deletion limit percentage must be between 0 and 100");
-                this.readMethod = "PERCENTAGE";
+                this.deletionMethod = "PERCENTAGE";
             }
             else
                 throw new Error("Deletion limit method not valid");
@@ -239,7 +252,7 @@ module.exports = {
             if ((typeof newLimit) != "number")
                 throw new TypeError(`The setMaxNumberOfStrings function only takes a number between 1 and ${Number.MAX_SAFE_INTEGER} as a parameter`);
             if ((newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER))
-                return;
+                throw new TypeError(`The setMaxNumberOfStrings function only takes a number between 1 and ${Number.MAX_SAFE_INTEGER} as a parameter`);
 
             this.maxStrings = newLimit;
         }
@@ -435,7 +448,7 @@ function getNumberOfStringsToDelete(descriptorsForDeletion, maxDeletionLimit, de
         if (numberOfStringsToDelete > descriptorsForDeletion.length)
             numberOfStringsToDelete = descriptorsForDeletion.length;
     }
-
+    
     return numberOfStringsToDelete;
 }
 

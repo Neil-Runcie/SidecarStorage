@@ -23,30 +23,19 @@ module.exports = {
             this.storageHandler = {};
         }
 
-        // Sets storage object based on provided storageMethod string
-        enableSavingAndLoading(storageMethod) {
-            if (this.saveAndLoadEnabled == false && JSON.stringify(this.storageHandler) =="{}") {
-                this.saveAndLoadEnabled = true;
-                this.storageHandler = new dstore.DataStorage(storageMethod);
-            }
-        }
-
-        savingAndLoadingIsEnabled() {
-            if (this.saveAndLoadEnabled == true && JSON.stringify(this.storageHandler) != "{}") {
-                return true;
-            }
-            return false;
-        }
+        
 
 
         // creates a database object and maps it to databases class variable
         createDatabase(name) {
             if ((typeof name) != "string" || name == "")
-                return;
+                throw new TypeError("The createDatabase function expects a non-empty string as the parameter");
             if (this.databases.has(name))
-                return;
+                throw new Error("A database with this name has already been created in this database");
 
             this.databases.set(name, new dbs.Database(name));
+
+            return this.databases.get(name);
         }
 
         // returns an array of database names
@@ -59,21 +48,41 @@ module.exports = {
 
         // returns a database object given an existing database name
         getDatabase(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The getDatabase function expects a non-empty string as the parameter");
 
             return this.databases.get(name);
         }
 
         // deletes a database object given an existing database name
         deleteDatabase(name) {
-            if ((typeof name) != "string")
-                return;
+            if ((typeof name) != "string" || name == "")
+                throw new TypeError("The deleteDatabase function expects a non-empty string as the parameter");
 
             if (this.databases.has(name)) {
                 this.databases.delete(name);
                 this.databasesToBeDeleted.add(name);
             }
+        }
+
+
+        // Sets storage object based on provided storageMethod string
+        enableSavingAndLoading(storageMethod="LOCALDISK") {
+            if ((typeof storageMethod) != "string" || storageMethod == "")
+                throw new TypeError("The enableSavingAndLoading function expects a nonempty string as the parameter");
+
+            if (!this.savingAndLoadingIsEnabled()) {
+                this.saveAndLoadEnabled = true;
+                // Parameter validation is handled by storage object
+                this.storageHandler = new dstore.DataStorage(storageMethod);
+            }
+        }
+
+        savingAndLoadingIsEnabled() {
+            if (this.saveAndLoadEnabled == true && JSON.stringify(this.storageHandler) != "{}") {
+                return true;
+            }
+            return false;
         }
 
         // load databases from persistent storage if no databases records are present
@@ -108,7 +117,7 @@ module.exports = {
                 this.storageHandler.saveDatabases(this.databases);
         }
 
-        clearAllStoredData() {
+        deleteAllStoredData() {
             if (!this.savingAndLoadingIsEnabled())
                 throw new Error("Saving and loading has not been enabled");
 

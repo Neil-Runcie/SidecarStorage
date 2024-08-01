@@ -8,7 +8,7 @@ beforeEach(() => {
 
 afterEach(() => {
     if (DBMS.savingAndLoadingIsEnabled())
-        DBMS.clearAllStoredData();
+        DBMS.deleteAllStoredData();
     DBMS.clearInstance();
     DBMS = undefined;
 });
