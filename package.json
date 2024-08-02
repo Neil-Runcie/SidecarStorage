@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Storage data structures",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "test": "node --expose-gc --no-compilation-cache ./node_modules/jest/bin/jest.js"
   },
