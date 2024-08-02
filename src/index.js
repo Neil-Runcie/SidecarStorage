@@ -1,11 +1,7 @@
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
+import { DatabaseManager } from './DatabaseManager.js';
+import { KeyValueStore as KVS } from './KeyValueStore.js';
+import { TextSearchStore as TSS } from './TextSearchStore.js';
 
-const DBMS = require('./DatabaseManager.js');
-const KVS = require('./KeyValueStore.js');
-const TSS = require('./TextSearchStore.js');
-
-exports.DBMS = DBMS;
-exports.keyValueStore = KVS;
-exports.textSearchStore = TSS;
+export const DBMS = DatabaseManager;
+export const KeyValueStore = KVS;
+export const TextSearchStore = TSS;

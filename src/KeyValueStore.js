@@ -1,188 +1,187 @@
  
-module.exports = {
-    KeyValueStore: class KeyValueStore {
+export class KeyValueStore {
 
-        // keys is an array of strings that will be used as keys to the table
-        constructor(keys) {
-            // Cannot proceed with invalid keys
-            if (!creationKeysAreValid(keys))
-                throw new TypeError("Invalid keys were provided. Expected array of non-empty strings");
+    // keys is an array of strings that will be used as keys to the table
+    constructor(keys) {
+        // Cannot proceed with invalid keys
+        if (!creationKeysAreValid(keys))
+            throw new TypeError("Invalid keys were provided. Expected array of non-empty strings");
 
-            this.keys = keys;
-            this.map = new Map();
+        this.keys = keys;
+        this.map = new Map();
+    }
+
+
+    // Add new data to store based on keys object
+    // Will only add new data and skip if data is already present for keys
+    // returns false if no addition of data occured and true otherwise
+    add(keys, data) {
+        if (data == undefined)
+            throw new TypeError("The add function does not accept undefined data");
+        if (!areKeysValid(keys, this.keys))
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
+
+        let keyString;
+        try {
+            keyString = createCommaSeparatedKeyString(keys, this.keys);
+        }
+        catch {
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
         }
 
+        if (this.map.has(keyString))
+            return false;
 
-        // Add new data to store based on keys object
-        // Will only add new data and skip if data is already present for keys
-        // returns false if no addition of data occured and true otherwise
-        add(keys, data) {
-            if (data == undefined)
-                throw new TypeError("The add function does not accept undefined data");
-            if (!areKeysValid(keys, this.keys))
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
+        let dataDeepCopy = JSON.parse(JSON.stringify(data));
+        this.map.set(keyString, dataDeepCopy);
+        return true;
+    }
 
-            let keyString;
-            try {
-                keyString = createCommaSeparatedKeyString(keys, this.keys);
-            }
-            catch {
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
-            }
+    // Read data from store based on keys object
+    // If data does not exist return undefined 
+    // returns data from map associated with provided keys
+    read(keys) {
+        if (!areKeysValid(keys, this.keys))
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
 
-            if (this.map.has(keyString))
-                return false;
-
-            let dataDeepCopy = JSON.parse(JSON.stringify(data));
-            this.map.set(keyString, dataDeepCopy);
-            return true;
+        let keyString;
+        try {
+            keyString = createCommaSeparatedKeyString(keys, this.keys);
+        }
+        catch {
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
         }
 
-        // Read data from store based on keys object
-        // If data does not exist return undefined 
-        // returns data from map associated with provided keys
-        read(keys) {
-            if (!areKeysValid(keys, this.keys))
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
+        if (!this.map.has(keyString))
+            return undefined;
 
-            let keyString;
-            try {
-                keyString = createCommaSeparatedKeyString(keys, this.keys);
-            }
-            catch {
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
-            }
+        return this.map.get(keyString);
+    }
 
-            if (!this.map.has(keyString))
-                return undefined;
+    // Return all data from store as an array
+    readAll() {
+        return Array.from(this.map.values());
+    }
 
-            return this.map.get(keyString);
+    // Update data to store based on keys object
+    // Will only update existing data and skip if data is not already present for keys
+    // returns false if no update of data occured and true otherwise
+    update(keys, data) {
+        if (data == undefined)
+            throw new TypeError("The update function does not accept undefined data");
+        if (!areKeysValid(keys, this.keys))
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
+
+        let keyString;
+        try {
+            keyString = createCommaSeparatedKeyString(keys, this.keys);
+        }
+        catch {
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
         }
 
-        // Return all data from store as an array
-        readAll() {
-            return Array.from(this.map.values());
+        if (!this.map.has(keyString))
+            return false;
+
+        let dataDeepCopy = JSON.parse(JSON.stringify(data));
+        this.map.set(keyString, dataDeepCopy);
+        return true;
+    }
+
+    // Add or update data based on keys object
+    // Will add or update data depending on whether data is present for associated keys or not
+    // returns false if no update of data occured and true otherwise
+    addOrUpdate(keys, data) {
+        if (data == undefined)
+            throw new TypeError("The addOrUpdate function does not accept undefined data");
+        if (!areKeysValid(keys, this.keys))
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
+
+        let keyString;
+        try {
+            keyString = createCommaSeparatedKeyString(keys, this.keys);
+        }
+        catch {
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
         }
 
-        // Update data to store based on keys object
-        // Will only update existing data and skip if data is not already present for keys
-        // returns false if no update of data occured and true otherwise
-        update(keys, data) {
-            if (data == undefined)
-                throw new TypeError("The update function does not accept undefined data");
-            if (!areKeysValid(keys, this.keys))
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
+        let dataDeepCopy = JSON.parse(JSON.stringify(data));
+        this.map.set(keyString, dataDeepCopy);
+        return true;
+    }
 
-            let keyString;
-            try {
-                keyString = createCommaSeparatedKeyString(keys, this.keys);
-            }
-            catch {
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
-            }
+    // Delete data and associated keys based on keys object
+    // Returns true if deleted, false if it does not exist
+    delete(keys) {
+        if (!areKeysValid(keys, this.keys))
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
 
-            if (!this.map.has(keyString))
-                return false;
-
-            let dataDeepCopy = JSON.parse(JSON.stringify(data));
-            this.map.set(keyString, dataDeepCopy);
-            return true;
+        let keyString;
+        try {
+            keyString = createCommaSeparatedKeyString(keys, this.keys);
+        }
+        catch {
+            throw new Error("The provided keys are not valid for this KeyValueStore object");
         }
 
-        // Add or update data based on keys object
-        // Will add or update data depending on whether data is present for associated keys or not
-        // returns false if no update of data occured and true otherwise
-        addOrUpdate(keys, data) {
-            if (data == undefined)
-                throw new TypeError("The addOrUpdate function does not accept undefined data");
-            if (!areKeysValid(keys, this.keys))
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
+        if (this.map.has(keyString))
+            return this.map.delete(keyString);
+    }
 
-            let keyString;
-            try {
-                keyString = createCommaSeparatedKeyString(keys, this.keys);
-            }
-            catch {
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
-            }
+    // Read data from store by calling passed searchCondition function on each data element
+    // If data cannot be found due to it not existing or due to an error, return empty array.
+    // Otherwise return data corresponding to data that returned true from searchCondition function
+    conditionalRead(searchCondition) {
+        if (typeof searchCondition !== "function")
+            throw new TypeError("The conditionalRead function can only accept a function that returns a boolean value as a parameter");
 
-            let dataDeepCopy = JSON.parse(JSON.stringify(data));
-            this.map.set(keyString, dataDeepCopy);
-            return true;
-        }
-
-        // Delete data and associated keys based on keys object
-        // Returns true if deleted, false if it does not exist
-        delete(keys) {
-            if (!areKeysValid(keys, this.keys))
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
-
-            let keyString;
-            try {
-                keyString = createCommaSeparatedKeyString(keys, this.keys);
-            }
-            catch {
-                throw new Error("The provided keys are not valid for this KeyValueStore object");
-            }
-
-            if (this.map.has(keyString))
-                return this.map.delete(keyString);
-        }
-
-        // Read data from store by calling passed searchCondition function on each data element
-        // If data cannot be found due to it not existing or due to an error, return empty array.
-        // Otherwise return data corresponding to data that returned true from searchCondition function
-        conditionalRead(searchCondition) {
-            if (typeof searchCondition !== "function")
-                throw new TypeError("The conditionalRead function can only accept a function that returns a boolean value as a parameter");
-
-            let searchResult = [];
+        let searchResult = [];
             
-            let providedKeys = this.map.keys();
-            for (const key of providedKeys) {
-                try {
-                    if (searchCondition(this.map.get(key))) {
-                        searchResult.push(this.map.get(key));  
-                    }
-                }
-                catch {
-                    return [];
+        let providedKeys = this.map.keys();
+        for (const key of providedKeys) {
+            try {
+                if (searchCondition(this.map.get(key))) {
+                    searchResult.push(this.map.get(key));  
                 }
             }
-
-            return searchResult;
+            catch {
+                return [];
+            }
         }
 
-        // Delete data from store by calling passed searchCondition function on each data element
-        // If data cannot be found due to it not existing or due to an error, return 0.
-        // Otherwise delete data corresponding to data that returned true from searchCondition function and return the number of records deleted
-        conditionalDelete(searchCondition) {
-            if (typeof searchCondition !== "function")
-                throw new TypeError("The conditionalRead function can only accept a function that returns a boolean value as a parameter");
+        return searchResult;
+    }
 
-            let numberOfRecordsDeleted = 0;
+    // Delete data from store by calling passed searchCondition function on each data element
+    // If data cannot be found due to it not existing or due to an error, return 0.
+    // Otherwise delete data corresponding to data that returned true from searchCondition function and return the number of records deleted
+    conditionalDelete(searchCondition) {
+        if (typeof searchCondition !== "function")
+            throw new TypeError("The conditionalRead function can only accept a function that returns a boolean value as a parameter");
 
-            let providedKeys = this.map.keys();
-            for (const key of providedKeys) {
-                try {
-                    if (searchCondition(this.map.get(key))) {
-                        this.map.delete(key);
-                        numberOfRecordsDeleted++;
-                    }
-                }
-                catch {
-                    return 0;
+        let numberOfRecordsDeleted = 0;
+
+        let providedKeys = this.map.keys();
+        for (const key of providedKeys) {
+            try {
+                if (searchCondition(this.map.get(key))) {
+                    this.map.delete(key);
+                    numberOfRecordsDeleted++;
                 }
             }
-
-            return numberOfRecordsDeleted;
+            catch {
+                return 0;
+            }
         }
 
-        getNumberOfEntries() {
-            return this.map.size;
-        }
+        return numberOfRecordsDeleted;
+    }
+
+    getNumberOfEntries() {
+        return this.map.size;
     }
 }
+
 
 
 

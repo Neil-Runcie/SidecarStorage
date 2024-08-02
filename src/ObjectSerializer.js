@@ -1,17 +1,13 @@
 
 // Enhancements to JSON functionality to support saving and loading of persistent data to and from files
-module.exports = {
-
-    ObjectToText(object) {
-        return JSON.stringify(object, Replacer);
-    }
-
-    ,
-
-    TextToObject(text) {
-        return JSON.parse(text, Reviver);
-    }
+export function ObjectToText(object) {
+    return JSON.stringify(object, Replacer);
 }
+
+export function TextToObject(text) {
+    return JSON.parse(text, Reviver);
+}
+
 
 // JSON stringify enhancer to allow for serialization of es6 maps and sets
 function Replacer(key, value) {

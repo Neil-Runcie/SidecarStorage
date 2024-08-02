@@ -1,13 +1,14 @@
-const dbc = require('../KeyValueStore.js');
+import { KeyValueStore } from '../KeyValueStore.js';
+
 
 test('Invalid KeyValueStore initialization key value data insertions', () => {
-    expect(() => new dbc.KeyValueStore({ key: "key1" })).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));
-    expect(() => new dbc.KeyValueStore("theKey")).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));
-    expect(() => new dbc.KeyValueStore([ "key1", "", "key2" ])).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));
+    expect(() => new KeyValueStore({ key: "key1" })).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));
+    expect(() => new KeyValueStore("theKey")).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));
+    expect(() => new KeyValueStore([ "key1", "", "key2" ])).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));
 });
 
 test('Validate key value data insertions', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject = { key1: "check", key2: "check2" };
     let keyObject2 = { key1: "check", key2: "check3" };
 
@@ -26,7 +27,7 @@ test('Validate key value data insertions', () => {
 });
 
 test('Invalid key value data insertions', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject = { key1: "check", key2: "check2" };
     let keyObjectArr = ["check", "check2"];
     let keyObjectEmpty = { key1: "check", key2: "" };
@@ -43,7 +44,7 @@ test('Invalid key value data insertions', () => {
 
 
 test('Validate key value data updates', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject = { key1: "check", key2: "check2" };
 
     kvs.update(keyObject, 3);
@@ -61,7 +62,7 @@ test('Validate key value data updates', () => {
 });
 
 test('Invalid key value data updates', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject = { key1: "check", key2: "check2" };
     let keyObjectArr = ["check", "check2"];
     let keyObjectEmpty = { key1: "check", key2: "" };
@@ -88,7 +89,7 @@ test('Invalid key value data updates', () => {
 
 
 test('Validate key value data deletions', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject = { key1: "check", key2: "check2" };
     let keyObject2 = { key1: "check", key2: "check3" };
 
@@ -103,7 +104,7 @@ test('Validate key value data deletions', () => {
 });
 
 test('Invalid key value data deletions', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject = { key1: "check", key2: "check2" };
     let keyObject2 = { key1: "check", key2: "check3" };
     let keyObjectArr = ["check", "check2"];
@@ -124,7 +125,7 @@ test('Invalid key value data deletions', () => {
 });
 
 test('Conditional key value data read', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject1 = { key1: "check", key2: "check2" };
     let dataObject1 = { test: 'x' };
     let keyObject2 = { key1: "check2", key2: "check3" };
@@ -144,7 +145,7 @@ test('Conditional key value data read', () => {
 });
 
 test('Conditional key value data deletion', () => {
-    let kvs = new dbc.KeyValueStore(["key1", "key2"]);
+    let kvs = new KeyValueStore(["key1", "key2"]);
     let keyObject1 = { key1: "check", key2: "check2" };
     let dataObject1 = { test: 'x' };
     let keyObject2 = { key1: "check2", key2: "check3" };

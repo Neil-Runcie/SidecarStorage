@@ -1,7 +1,7 @@
-const db = require('../Database.js');
+import { Database } from '../Database.js';
 
 test('Validate KeyValueStore creation', () => {
-    let testDB = new db.Database("Test");
+    let testDB = new Database("Test");
     testDB.createKeyValueStore("testKVS", ["test"]);
     testDB.createKeyValueStore("testKVS2", ["test","test2", "three"]);
 
@@ -10,7 +10,7 @@ test('Validate KeyValueStore creation', () => {
 });
 
 test('Invalid KeyValueStore handling', () => {
-    let testDB = new db.Database("Test");
+    let testDB = new Database("Test");
     testDB.createKeyValueStore("testKVS", ["test"]);
 
     expect(() => testDB.createKeyValueStore("testKVS", ["test", "test2", "three"])).toThrow(new Error("A Key Value Store with this name has already been created in this database"));
@@ -29,7 +29,7 @@ test('Invalid KeyValueStore handling', () => {
 });
 
 test('Validate TextSearchStore creation', () => {
-    let testDB = new db.Database("Test");
+    let testDB = new Database("Test");
     testDB.createTextSearchStore("testTSS");
     testDB.createTextSearchStore("testTSS2");
 
@@ -38,7 +38,7 @@ test('Validate TextSearchStore creation', () => {
 });
 
 test('Invalid TextSearchStore handling', () => {
-    let testDB = new db.Database("Test");
+    let testDB = new Database("Test");
     testDB.createTextSearchStore("testTSS");
 
     expect(() => testDB.createTextSearchStore("testTSS")).toThrow(new Error("A Text Search Store with this name has already been created in this database"));
@@ -55,7 +55,7 @@ test('Invalid TextSearchStore handling', () => {
 });
 
 test('Validate store name retrieval', () => {
-    let testDB = new db.Database("Test");
+    let testDB = new Database("Test");
     testDB.createKeyValueStore("testKVS", ["test"]);
     testDB.createTextSearchStore("testTSS");
 
@@ -64,7 +64,7 @@ test('Validate store name retrieval', () => {
 });
 
 test('Validate save logic', () => {
-    let testDB = new db.Database("Test");
+    let testDB = new Database("Test");
     testDB.createKeyValueStore("testKVS", ["test"]);
     testDB.createTextSearchStore("testTSS");
 

@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "node --expose-gc --no-compilation-cache ./node_modules/jest/bin/jest.js"
+    "test": "node  --experimental-vm-modules --expose-gc --no-compilation-cache ./node_modules/jest/bin/jest.js"
   },
   "repository": {
     "type": "git",

@@ -2,318 +2,317 @@
 var allowedPriorities = ["MRU", "LRU", "Shortest", "Longest", "Lexicographically"];
 // var allowedMethods = ["AMOUNT", "PERCENTAGE"];
 
-module.exports = {
-    TextSearchStore: class TextSearchStore {
+export class TextSearchStore {
 
-        constructor() {
-            this.root = new TrieNode();
+    constructor() {
+        this.root = new TrieNode();
 
-            // The comparison function used to sort descriptorsForReading in the TrieNode object
-            this.readComparison = MRUComparison;
-            this.maxReadLimit = Number.MAX_SAFE_INTEGER;
-            this.readMethod = "AMOUNT";
+        // The comparison function used to sort descriptorsForReading in the TrieNode object
+        this.readComparison = MRUComparison;
+        this.maxReadLimit = Number.MAX_SAFE_INTEGER;
+        this.readMethod = "AMOUNT";
 
-            // The comparison function used to sort descriptorsForDeletion array member variable
-            this.descriptorsForDeletion = [];
-            this.deletionComparison = LRUComparison;
-            this.maxDeletionLimit = 100;
-            this.deletionMethod = "AMOUNT";
+        // The comparison function used to sort descriptorsForDeletion array member variable
+        this.descriptorsForDeletion = [];
+        this.deletionComparison = LRUComparison;
+        this.maxDeletionLimit = 100;
+        this.deletionMethod = "AMOUNT";
 
-            this.maxStrings = Number.MAX_SAFE_INTEGER;
+        this.maxStrings = Number.MAX_SAFE_INTEGER;
             
+    }
+
+    // Adds a string to the trie like data structure if it is a nonempty string
+    // If the string can be added then it will return true otherwise it returns false
+    addString(stringToBeAdded) {
+        if ((typeof stringToBeAdded) != "string")
+            throw new TypeError("The addString function can only accept strings as parameters");
+        if (stringToBeAdded == "")
+            return false;
+        // Instead of returning could set end of word to true for root and add to read descriptors
+
+        EnsureStringOnlyContainsValidChars(stringToBeAdded);
+            
+            
+        // If string already exists in this object, update and sort descriptors for quick deletions
+        // return true to show succesful update
+        if (this.containsString(stringToBeAdded)) {
+            UpdateStringAccessTime(stringToBeAdded, this.descriptorsForDeletion);
+            if (this.deletionMethod == LRUComparison || this.deletionMethod == MRUComparison)
+                SortStringDescriptors(this.descriptorsForDeletion, this.deletionComparison);
         }
-
-        // Adds a string to the trie like data structure if it is a nonempty string
-        // If the string can be added then it will return true otherwise it returns false
-        addString(stringToBeAdded) {
-            if ((typeof stringToBeAdded) != "string")
-                throw new TypeError("The addString function can only accept strings as parameters");
-            if (stringToBeAdded == "")
-                return false;
-            // Instead of returning could set end of word to true for root and add to read descriptors
-
-            EnsureStringOnlyContainsValidChars(stringToBeAdded);
-            
-            
-            // If string already exists in this object, update and sort descriptors for quick deletions
-            // return true to show succesful update
-            if (this.containsString(stringToBeAdded)) {
-                UpdateStringAccessTime(stringToBeAdded, this.descriptorsForDeletion);
-                if (this.deletionMethod == LRUComparison || this.deletionMethod == MRUComparison)
-                    SortStringDescriptors(this.descriptorsForDeletion, this.deletionComparison);
-            }
-            else { // If string does not already exists in this object
+        else { // If string does not already exists in this object
                 
-                if (this.descriptorsForDeletion.length >= this.maxStrings) {
-                    this.deleteStringsBasedOnPriority();
-                }
-
-                let stringDescriptorToBeAdded = new StringDescriptor(stringToBeAdded);
-                let characters = stringToBeAdded.split('');
-
-                // traverse trie and update descriptorsForReading arrays for quick reads in each node in the path of the newly added string
-                let nodeTraverser = this.root;
-                let currentIndex = 0;
-
-                while (currentIndex < characters.length) {
-
-                    if (nodeTraverser.characters.has(characters[currentIndex])) {
-                        AddDescriptorByPriority(stringDescriptorToBeAdded, nodeTraverser.descriptorsForReading, this.readComparison);
-                        nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
-                    }
-                    else {
-                        AddDescriptorByPriority(stringDescriptorToBeAdded, nodeTraverser.descriptorsForReading, this.readComparison);
-                        nodeTraverser.characters.set(characters[currentIndex], new TrieNode());
-                        nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
-                    }
-                    currentIndex++;
-
-                }
-                nodeTraverser.EndOfWord = true;
-
-                // Add descriptor to descriptorsForDeletion array for quick deletion
-                AddDescriptorByPriority(stringDescriptorToBeAdded, this.descriptorsForDeletion, this.deletionComparison);
+            if (this.descriptorsForDeletion.length >= this.maxStrings) {
+                this.deleteStringsBasedOnPriority();
             }
 
-            return true;
+            let stringDescriptorToBeAdded = new StringDescriptor(stringToBeAdded);
+            let characters = stringToBeAdded.split('');
 
-        }
-
-        // Adds a string to the trie like data structure if it is a nonempty string
-        // If the non-empty string can found then it will return true otherwise it returns false
-        containsString(stringToLookFor) {
-            if ((typeof stringToLookFor) != "string")
-                throw new TypeError("The containsString function can only accept strings as parameters");
-            if (stringToLookFor == "")
-                return false;
-
-            // Traverse the trie and see if the string characters are present
+            // traverse trie and update descriptorsForReading arrays for quick reads in each node in the path of the newly added string
             let nodeTraverser = this.root;
-            let characters = stringToLookFor.split('');
             let currentIndex = 0;
+
             while (currentIndex < characters.length) {
+
                 if (nodeTraverser.characters.has(characters[currentIndex])) {
+                    AddDescriptorByPriority(stringDescriptorToBeAdded, nodeTraverser.descriptorsForReading, this.readComparison);
                     nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
                 }
-                else { // if one of the expected characters is not present immediately return false
-                    return false;
+                else {
+                    AddDescriptorByPriority(stringDescriptorToBeAdded, nodeTraverser.descriptorsForReading, this.readComparison);
+                    nodeTraverser.characters.set(characters[currentIndex], new TrieNode());
+                    nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
                 }
                 currentIndex++;
+
             }
+            nodeTraverser.EndOfWord = true;
 
-            if (nodeTraverser.EndOfWord == true)
-                return true;
+            // Add descriptor to descriptorsForDeletion array for quick deletion
+            AddDescriptorByPriority(stringDescriptorToBeAdded, this.descriptorsForDeletion, this.deletionComparison);
+        }
 
+        return true;
+
+    }
+
+    // Adds a string to the trie like data structure if it is a nonempty string
+    // If the non-empty string can found then it will return true otherwise it returns false
+    containsString(stringToLookFor) {
+        if ((typeof stringToLookFor) != "string")
+            throw new TypeError("The containsString function can only accept strings as parameters");
+        if (stringToLookFor == "")
             return false;
+
+        // Traverse the trie and see if the string characters are present
+        let nodeTraverser = this.root;
+        let characters = stringToLookFor.split('');
+        let currentIndex = 0;
+        while (currentIndex < characters.length) {
+            if (nodeTraverser.characters.has(characters[currentIndex])) {
+                nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
+            }
+            else { // if one of the expected characters is not present immediately return false
+                return false;
+            }
+            currentIndex++;
         }
 
-        // deleteStringsBasedOnPriority calculates the number of strings to be deleted based on priority and deletes each one
-        deleteStringsBasedOnPriority() {
-            while (this.descriptorsForDeletion.length > this.maxStrings) {
-                const stringDescriptor = this.descriptorsForDeletion[this.descriptorsForDeletion.length-1];
-                this.deleteString(stringDescriptor.string);
-            }
+        if (nodeTraverser.EndOfWord == true)
+            return true;
 
-            let numberOfStringsToDelete = getNumberOfStringsToDelete(this.descriptorsForDeletion, this.maxDeletionLimit, this.deletionMethod);
+        return false;
+    }
 
-            for (let i = 0; i < numberOfStringsToDelete; i++) {
-                const stringDescriptor = this.descriptorsForDeletion[this.descriptorsForDeletion.length - 1];
-                this.deleteString(stringDescriptor.string);
-            }
+    // deleteStringsBasedOnPriority calculates the number of strings to be deleted based on priority and deletes each one
+    deleteStringsBasedOnPriority() {
+        while (this.descriptorsForDeletion.length > this.maxStrings) {
+            const stringDescriptor = this.descriptorsForDeletion[this.descriptorsForDeletion.length-1];
+            this.deleteString(stringDescriptor.string);
         }
+
+        let numberOfStringsToDelete = getNumberOfStringsToDelete(this.descriptorsForDeletion, this.maxDeletionLimit, this.deletionMethod);
+
+        for (let i = 0; i < numberOfStringsToDelete; i++) {
+            const stringDescriptor = this.descriptorsForDeletion[this.descriptorsForDeletion.length - 1];
+            this.deleteString(stringDescriptor.string);
+        }
+    }
 
         
-        // deleteString takes a nonempty string and deletes it if it is present in the trie structure
-        // If the non-empty string is deleted then it will return true otherwise it returns false
-        deleteString(stringToBeDeleted) {
-            if ((typeof stringToBeDeleted) != "string")
-                throw new TypeError("The deleteString function can only accept strings as parameters");
-            if (!this.containsString(stringToBeDeleted))
-                return false;
-            if (stringToBeDeleted == "")
-                return false;
+    // deleteString takes a nonempty string and deletes it if it is present in the trie structure
+    // If the non-empty string is deleted then it will return true otherwise it returns false
+    deleteString(stringToBeDeleted) {
+        if ((typeof stringToBeDeleted) != "string")
+            throw new TypeError("The deleteString function can only accept strings as parameters");
+        if (!this.containsString(stringToBeDeleted))
+            return false;
+        if (stringToBeDeleted == "")
+            return false;
 
-            for (let i = this.descriptorsForDeletion.length - 1; i < this.descriptorsForDeletion.length; i--) {
-                if (this.descriptorsForDeletion[i].string == stringToBeDeleted) {
-                    this.descriptorsForDeletion.splice(i, 1);
+        for (let i = this.descriptorsForDeletion.length - 1; i < this.descriptorsForDeletion.length; i--) {
+            if (this.descriptorsForDeletion[i].string == stringToBeDeleted) {
+                this.descriptorsForDeletion.splice(i, 1);
+                break;
+            }
+        }
+        // Traverse through the trie and remove the string from every descriptorsForReading array in nodes in the path of the provided stringToBeDeleted
+        let nodeTraverser = this.root;
+        let characters = stringToBeDeleted.split('');
+        let currentIndex = 0;
+        while (currentIndex < characters.length) {
+
+            // If there is only one string remaining then delete the reference from the node thereby trimming the trie entirely from that point
+            if (nodeTraverser.descriptorsForReading.length == 1) {
+                let nodeToDelete = nodeTraverser;
+                nodeTraverser.descriptorsForReading.splice(0, 1);
+                nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
+                nodeToDelete.characters.clear();
+                currentIndex++;
+                continue;
+            }
+
+            // Find the entry of the specific string in the descriptorsForReading array and remove it
+            for (let i = 0; i < nodeTraverser.descriptorsForReading.length; i++) {
+                if (nodeTraverser.descriptorsForReading[i].string == stringToBeDeleted) {
+                    nodeTraverser.descriptorsForReading.splice(i, 1);
                     break;
                 }
             }
-            // Traverse through the trie and remove the string from every descriptorsForReading array in nodes in the path of the provided stringToBeDeleted
-            let nodeTraverser = this.root;
-            let characters = stringToBeDeleted.split('');
-            let currentIndex = 0;
-            while (currentIndex < characters.length) {
+            nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
 
-                // If there is only one string remaining then delete the reference from the node thereby trimming the trie entirely from that point
-                if (nodeTraverser.descriptorsForReading.length == 1) {
-                    let nodeToDelete = nodeTraverser;
-                    nodeTraverser.descriptorsForReading.splice(0, 1);
-                    nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
-                    nodeToDelete.characters.clear();
-                    currentIndex++;
-                    continue;
-                }
-
-                // Find the entry of the specific string in the descriptorsForReading array and remove it
-                for (let i = 0; i < nodeTraverser.descriptorsForReading.length; i++) {
-                    if (nodeTraverser.descriptorsForReading[i].string == stringToBeDeleted) {
-                        nodeTraverser.descriptorsForReading.splice(i, 1);
-                        break;
-                    }
-                }
-                nodeTraverser = nodeTraverser.characters.get(characters[currentIndex]);
-
-                currentIndex++;
-            }
-            nodeTraverser.EndOfWord = false;
-
-            return true;
-
+            currentIndex++;
         }
+        nodeTraverser.EndOfWord = false;
 
-        // getPossibleMatches takes a non-empty string as a prefix and returns all strings with that prefix
-        // Currently implemented in such a way that the strings are alreay sorted so retrieval is quick
-        getPossibleMatches(prefixString) {
-            if ((typeof prefixString) != "string")
-                throw new TypeError("The getPossibleMatches function can only accept strings as parameters");
-            if (prefixString == "")
-                return [];
-
-
-            // Traverse through the trie to get to the specific node that corresponds to the end of the prefix tree
-            let nodeTraverser = this.root;
-            let characters = prefixString.split('');
-            let currentIndex = 0;
-
-            while (nodeTraverser != null && nodeTraverser != undefined && currentIndex < characters.length) {
-                nodeTraverser = nodeTraverser.characters.get(characters[currentIndex++]);
-            }
-            if (nodeTraverser == null)
-                return [];
-
-            // Get the maximum number of strings to read and also grab the list of strings to read
-            let numberOfStringsToRead = getNumberOfStringsToRead(nodeTraverser.descriptorsForReading, this.maxReadLimit, this.readMethod);
-            let listOfStrings = nodeTraverser.descriptorsForReading.map((descriptor) => { return descriptor.string });
-
-            // Return the specified amount of strings in reverse from the end of the list due to reversed sorting
-            return listOfStrings.slice(nodeTraverser.descriptorsForReading.length - numberOfStringsToRead, nodeTraverser.descriptorsForReading.length).reverse();
-        }
-
-        // setMaxReadLimit takes a newLimit number and limitMethod should either be "AMOUNT" or "PERCENTAGE
-        // the values are set if the input is valid
-        setMaxReadLimit(newLimit, limitMethod = "AMOUNT") {
-            if ((typeof newLimit) != "number" || (typeof limitMethod) != "string")
-                return;
-
-            if (limitMethod == "AMOUNT") {
-                this.readMethod = "AMOUNT";
-                // 1 to Number.MAX_SAFE_INTEGER is the acceptable range for a processing safe number
-                if (newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER)
-                    throw new Error(`Read limit percentage must be between 1 and ${Number.MAX_SAFE_INTEGER}`);
-            }
-            else if (limitMethod == "PERCENTAGE") {
-                // 1 to 100 is the acceptable range for a percentage
-                if (newLimit < 1 || newLimit > 100)
-                    throw new Error("Read limit percentage must be between 1 and 100");
-                this.readMethod = "PERCENTAGE";
-            }
-            else
-                throw new Error("Read limit method not valid");
-
-            this.maxReadLimit = newLimit;
-        }
-
-        // setMaxDeletionLimit takes a newLimit number and limitMethod should either be "AMOUNT" or "PERCENTAGE"
-        // the values are set if the input is valid
-        setMaxDeletionLimit(newLimit, limitMethod="AMOUNT") {
-            if ((typeof newLimit) != "number" || (typeof limitMethod) != "string")
-                throw new TypeError("The setMaxDeletion function Limit first parameter must be a number and the second should be either \"AMOUNT\" or \"PERCENTAGE\"");
-
-            if (limitMethod == "AMOUNT") {
-                this.deletionMethod = "AMOUNT";
-                // 1 to Number.MAX_SAFE_INTEGER is the acceptable range for a processing safe number
-                if (newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER)
-                    throw new Error(`Deletion limit percentage must be between 1 and ${Number.MAX_SAFE_INTEGER}`);
-            }
-            else if (limitMethod == "PERCENTAGE") {
-                // 1 to 100 is the acceptable range for a percentage
-                if (newLimit < 1 || newLimit > 100)
-                    throw new Error("Deletion limit percentage must be between 0 and 100");
-                this.deletionMethod = "PERCENTAGE";
-            }
-            else
-                throw new Error("Deletion limit method not valid");
-
-            this.maxDeletionLimit = newLimit;
-        }
-
-        setMaxNumberOfStrings(newLimit) {
-            if ((typeof newLimit) != "number")
-                throw new TypeError(`The setMaxNumberOfStrings function only takes a number between 1 and ${Number.MAX_SAFE_INTEGER} as a parameter`);
-            if ((newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER))
-                throw new TypeError(`The setMaxNumberOfStrings function only takes a number between 1 and ${Number.MAX_SAFE_INTEGER} as a parameter`);
-
-            this.maxStrings = newLimit;
-        }
-
-        getAllStrings() {
-            return this.root.descriptorsForReading.map((descriptor) => { return descriptor.string });
-        }
-
-        getNumberOfStrings() {
-            return this.root.descriptorsForReading.length;
-        }
-
-        // changeDeletionPriority takes a string matching to the "allowedPriorities" array 
-        changeDeletionPriority(deletionPriority) {
-            if ((typeof deletionPriority) != "string") {
-                throw new TypeError(`The changeDeletionPriority function only takes a string as a parameter`);
-            }
-            if (!allowedPriorities.includes(deletionPriority)) {
-                throw new TypeError(`The changeDeletionPriority function only takes \"MRU\", \"LRU\", \"Shortest\", \"Longest\", or \"Lexicographically\" as parameters`);
-            }
-
-            // If the deletion priority has changed, update the sorting method and sort the descriptorsForDeletion array for quick deletions
-            if (this.deletionPriority != deletionPriority) {
-                this.deletionPriority = deletionPriority;
-                this.deletionComparison = getPriority(deletionPriority);
-                SortStringDescriptors(this.descriptorsForDeletion, this.deletionComparison);
-            }
-        }
-
-        
-        // changeReadPriority takes a string matching to the "allowedPriorities" array
-        changeReadPriority(readPriority) {
-            if ((typeof readPriority) != "string") {
-                throw new TypeError(`The changeReadPriority function only takes a string as a parameter`);
-            }
-            if (!allowedPriorities.includes(readPriority)) {
-                throw new TypeError(`The changeReadPriority function only takes \"MRU\", \"LRU\", \"Shortest\", \"Longest\", or \"Lexicographically\" as parameters`);
-            }
-
-            if (this.readPriority != readPriority) {
-                this.readPriority = readPriority;
-                this.readComparison = getPriority(readPriority);
-
-                // Traverse through the entire tree using a breadth first traversal and sort descriptorsForReading on each node for quick reads
-                let bfsQueue = [];
-                bfsQueue.push(this.root);
-
-                while (bfsQueue.length > 0) {
-
-                    SortStringDescriptors(bfsQueue[0].descriptorsForReading, this.readComparison);
-                    for (let node of bfsQueue[0].characters.values()) {
-                        bfsQueue.push(node);
-                    }
-                    bfsQueue.shift();// delete the first element of the array
-                }
-
-            }
-        }
+        return true;
 
     }
+
+    // getPossibleMatches takes a non-empty string as a prefix and returns all strings with that prefix
+    // Currently implemented in such a way that the strings are alreay sorted so retrieval is quick
+    getPossibleMatches(prefixString) {
+        if ((typeof prefixString) != "string")
+            throw new TypeError("The getPossibleMatches function can only accept strings as parameters");
+        if (prefixString == "")
+            return [];
+
+
+        // Traverse through the trie to get to the specific node that corresponds to the end of the prefix tree
+        let nodeTraverser = this.root;
+        let characters = prefixString.split('');
+        let currentIndex = 0;
+
+        while (nodeTraverser != null && nodeTraverser != undefined && currentIndex < characters.length) {
+            nodeTraverser = nodeTraverser.characters.get(characters[currentIndex++]);
+        }
+        if (nodeTraverser == null)
+            return [];
+
+        // Get the maximum number of strings to read and also grab the list of strings to read
+        let numberOfStringsToRead = getNumberOfStringsToRead(nodeTraverser.descriptorsForReading, this.maxReadLimit, this.readMethod);
+        let listOfStrings = nodeTraverser.descriptorsForReading.map((descriptor) => { return descriptor.string });
+
+        // Return the specified amount of strings in reverse from the end of the list due to reversed sorting
+        return listOfStrings.slice(nodeTraverser.descriptorsForReading.length - numberOfStringsToRead, nodeTraverser.descriptorsForReading.length).reverse();
+    }
+
+    // setMaxReadLimit takes a newLimit number and limitMethod should either be "AMOUNT" or "PERCENTAGE
+    // the values are set if the input is valid
+    setMaxReadLimit(newLimit, limitMethod = "AMOUNT") {
+        if ((typeof newLimit) != "number" || (typeof limitMethod) != "string")
+            return;
+
+        if (limitMethod == "AMOUNT") {
+            this.readMethod = "AMOUNT";
+            // 1 to Number.MAX_SAFE_INTEGER is the acceptable range for a processing safe number
+            if (newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER)
+                throw new Error(`Read limit percentage must be between 1 and ${Number.MAX_SAFE_INTEGER}`);
+        }
+        else if (limitMethod == "PERCENTAGE") {
+            // 1 to 100 is the acceptable range for a percentage
+            if (newLimit < 1 || newLimit > 100)
+                throw new Error("Read limit percentage must be between 1 and 100");
+            this.readMethod = "PERCENTAGE";
+        }
+        else
+            throw new Error("Read limit method not valid");
+
+        this.maxReadLimit = newLimit;
+    }
+
+    // setMaxDeletionLimit takes a newLimit number and limitMethod should either be "AMOUNT" or "PERCENTAGE"
+    // the values are set if the input is valid
+    setMaxDeletionLimit(newLimit, limitMethod="AMOUNT") {
+        if ((typeof newLimit) != "number" || (typeof limitMethod) != "string")
+            throw new TypeError("The setMaxDeletion function Limit first parameter must be a number and the second should be either \"AMOUNT\" or \"PERCENTAGE\"");
+
+        if (limitMethod == "AMOUNT") {
+            this.deletionMethod = "AMOUNT";
+            // 1 to Number.MAX_SAFE_INTEGER is the acceptable range for a processing safe number
+            if (newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER)
+                throw new Error(`Deletion limit percentage must be between 1 and ${Number.MAX_SAFE_INTEGER}`);
+        }
+        else if (limitMethod == "PERCENTAGE") {
+            // 1 to 100 is the acceptable range for a percentage
+            if (newLimit < 1 || newLimit > 100)
+                throw new Error("Deletion limit percentage must be between 0 and 100");
+            this.deletionMethod = "PERCENTAGE";
+        }
+        else
+            throw new Error("Deletion limit method not valid");
+
+        this.maxDeletionLimit = newLimit;
+    }
+
+    setMaxNumberOfStrings(newLimit) {
+        if ((typeof newLimit) != "number")
+            throw new TypeError(`The setMaxNumberOfStrings function only takes a number between 1 and ${Number.MAX_SAFE_INTEGER} as a parameter`);
+        if ((newLimit < 1 || newLimit > Number.MAX_SAFE_INTEGER))
+            throw new TypeError(`The setMaxNumberOfStrings function only takes a number between 1 and ${Number.MAX_SAFE_INTEGER} as a parameter`);
+
+        this.maxStrings = newLimit;
+    }
+
+    getAllStrings() {
+        return this.root.descriptorsForReading.map((descriptor) => { return descriptor.string });
+    }
+
+    getNumberOfStrings() {
+        return this.root.descriptorsForReading.length;
+    }
+
+    // changeDeletionPriority takes a string matching to the "allowedPriorities" array 
+    changeDeletionPriority(deletionPriority) {
+        if ((typeof deletionPriority) != "string") {
+            throw new TypeError(`The changeDeletionPriority function only takes a string as a parameter`);
+        }
+        if (!allowedPriorities.includes(deletionPriority)) {
+            throw new TypeError(`The changeDeletionPriority function only takes \"MRU\", \"LRU\", \"Shortest\", \"Longest\", or \"Lexicographically\" as parameters`);
+        }
+
+        // If the deletion priority has changed, update the sorting method and sort the descriptorsForDeletion array for quick deletions
+        if (this.deletionPriority != deletionPriority) {
+            this.deletionPriority = deletionPriority;
+            this.deletionComparison = getPriority(deletionPriority);
+            SortStringDescriptors(this.descriptorsForDeletion, this.deletionComparison);
+        }
+    }
+
+        
+    // changeReadPriority takes a string matching to the "allowedPriorities" array
+    changeReadPriority(readPriority) {
+        if ((typeof readPriority) != "string") {
+            throw new TypeError(`The changeReadPriority function only takes a string as a parameter`);
+        }
+        if (!allowedPriorities.includes(readPriority)) {
+            throw new TypeError(`The changeReadPriority function only takes \"MRU\", \"LRU\", \"Shortest\", \"Longest\", or \"Lexicographically\" as parameters`);
+        }
+
+        if (this.readPriority != readPriority) {
+            this.readPriority = readPriority;
+            this.readComparison = getPriority(readPriority);
+
+            // Traverse through the entire tree using a breadth first traversal and sort descriptorsForReading on each node for quick reads
+            let bfsQueue = [];
+            bfsQueue.push(this.root);
+
+            while (bfsQueue.length > 0) {
+
+                SortStringDescriptors(bfsQueue[0].descriptorsForReading, this.readComparison);
+                for (let node of bfsQueue[0].characters.values()) {
+                    bfsQueue.push(node);
+                }
+                bfsQueue.shift();// delete the first element of the array
+            }
+
+        }
+    }
+
 }
+
 
 
 

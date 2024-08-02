@@ -1,4 +1,4 @@
-const dbc = require('../TextSearchStore');
+import { TextSearchStore } from '../TextSearchStore.js';
 
 beforeEach(() => {
     global.gc && global.gc()
@@ -10,7 +10,7 @@ afterEach(() => {
 
 
 test('Validate trie string insertions', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -21,7 +21,7 @@ test('Validate trie string insertions', () => {
 });
 
 test('Validate trie contains string', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -34,7 +34,7 @@ test('Validate trie contains string', () => {
 
 
 test('Validate trie string deletions', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("testing1");
     trie.addString("test2");
@@ -73,7 +73,7 @@ test('Validate trie string deletions', () => {
 
 
 test('Validate trie search suggestions', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -94,7 +94,7 @@ test('Validate trie search suggestions', () => {
 
 
 test('Validate empty trie return', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -110,7 +110,7 @@ test('Validate empty trie return', () => {
 
 // Currently acting same as MRU since string addition timestamps are not sensitive enough to decide recency
 test('Validate "LRU" deletion', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     //trie.descriptorsForDeletion[0].accesses[0] -= 2;
     trie.addString("second");
@@ -133,7 +133,7 @@ test('Validate "LRU" deletion', () => {
 });
 
 test('Validate "MRU" deletion', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -153,7 +153,7 @@ test('Validate "MRU" deletion', () => {
 });
 
 test('Validate "Longest" deletion', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -171,7 +171,7 @@ test('Validate "Longest" deletion', () => {
 });
 
 test('Validate "Shortest" deletion', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -189,7 +189,7 @@ test('Validate "Shortest" deletion', () => {
 });
 
 test('Validate "Lexicographical" deletion', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("test");
     trie.addString("second");
     trie.addString("test2");
@@ -208,7 +208,7 @@ test('Validate "Lexicographical" deletion', () => {
 
 
 test('Validate "LRU" read', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("testing");
     trie.addString("test");
     trie.addString("second");
@@ -225,7 +225,7 @@ test('Validate "LRU" read', () => {
 
 // Currently acting same as LRU since string addition timestamps are not sensitive enough to decide recency
 test('Validate "MRU" read', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("testing");
     trie.addString("test");
     trie.addString("second");
@@ -241,7 +241,7 @@ test('Validate "MRU" read', () => {
 });
 
 test('Validate "Shortest" read', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("testing");
     trie.addString("test");
     trie.addString("second");
@@ -256,7 +256,7 @@ test('Validate "Shortest" read', () => {
 });
 
 test('Validate "Longest" read', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("testing");
     trie.addString("test");
     trie.addString("second");
@@ -271,7 +271,7 @@ test('Validate "Longest" read', () => {
 });
 
 test('Validate "Lexicographical" read', () => {
-    let trie = new dbc.TextSearchStore();
+    let trie = new TextSearchStore();
     trie.addString("testing");
     trie.addString("test");
     trie.addString("second");
