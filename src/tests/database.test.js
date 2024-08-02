@@ -1,4 +1,4 @@
-const db = require('./Database.js');
+const db = require('../Database.js');
 
 test('Validate KeyValueStore creation', () => {
     let testDB = new db.Database("Test");

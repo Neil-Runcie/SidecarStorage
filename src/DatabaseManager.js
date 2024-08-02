@@ -117,6 +117,7 @@ module.exports = {
                 this.storageHandler.saveDatabases(this.databases);
         }
 
+
         deleteAllStoredData() {
             if (!this.savingAndLoadingIsEnabled())
                 throw new Error("Saving and loading has not been enabled");

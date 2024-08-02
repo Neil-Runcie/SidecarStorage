@@ -1,5 +1,5 @@
-const dbs = require('./DatabaseManager.js');
-const db = require('./Database.js');
+const dbs = require('../DatabaseManager.js');
+const db = require('../Database.js');
 let DBMS;
 
 beforeEach(() => {

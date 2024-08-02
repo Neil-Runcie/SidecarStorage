@@ -1,4 +1,4 @@
-const DBM = require('./DatabaseManager.js');
+const DBM = require('../DatabaseManager.js');
 const fs = require('fs');
 var DBMS;
 
@@ -48,7 +48,7 @@ test('Validate reads after save and restore', () => {
 
     DBMS.enableSavingAndLoading();
     DBMS.saveDatabasesToStorage();
-    let storageLocation = __dirname + "\\StorageSpace";
+    let storageLocation = __dirname.substring(0, __dirname.lastIndexOf("\\")) + "\\StorageSpace";
     expect(fs.existsSync(storageLocation)).toBeTruthy();
 
     expect(DBMS.loadDatabasesFromStorage()).toBeFalsy();

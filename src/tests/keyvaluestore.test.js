@@ -1,4 +1,4 @@
-const dbc = require('./KeyValueStore.js');
+const dbc = require('../KeyValueStore.js');
 
 test('Invalid KeyValueStore initialization key value data insertions', () => {
     expect(() => new dbc.KeyValueStore({ key: "key1" })).toThrow(new Error("Invalid keys were provided. Expected array of non-empty strings"));

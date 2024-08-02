@@ -1,7 +1,6 @@
-const db = require('./Database.js');
-const serial = require('./ObjectSerializer.js');
-const KVStore = require('./KeyValueStore.js');
-const TSStore = require('./TextSearchStore.js');
+const db = require('../Database.js');
+const serial = require('../ObjectSerializer.js');
+
 
 test('Validate object to text serialization', () => {
     let testDB = new db.Database("Test");

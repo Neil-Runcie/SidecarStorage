@@ -1,4 +1,4 @@
-const dbc = require('./TextSearchStore');
+const dbc = require('../TextSearchStore');
 
 beforeEach(() => {
     global.gc && global.gc()
@@ -53,6 +53,11 @@ test('Validate trie string deletions', () => {
     let expectationAfterDeletion = ["testing1", "test2", "second", "tested2345"];
     expect(JSON.stringify(trie.getAllStrings())).toEqual(JSON.stringify(expectationAfterDeletion)); 
     expect(trie.getNumberOfStrings()).toBe(4);
+
+    trie.changeReadPriority("Shortest");
+    trie.setMaxReadLimit(2);
+    let readExpectation = ["test2", "testing1"];
+    expect(JSON.stringify(trie.getPossibleMatches("t"))).toEqual(JSON.stringify(readExpectation));
 
     trie.changeDeletionPriority("Longest");
     trie.setMaxNumberOfStrings(3);
