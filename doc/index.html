@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="keywords" content="storage">
+    <meta name="description" content="sidecarstorage Documentation">
+    <meta name="author" content="Neil Runcie">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="indexstyle.css">
+
+
+</head>
+<body>
+    <div style="width: 70%; margin: auto">
+        <div class="tab">
+            <button class="tabs" onclick="displayDoc('MainDiv')">SidecarStorage</button>
+            <button class="tabs" onclick="displayDoc('DBMSDiv')">DBMS</button>
+            <button class="tabs" onclick="displayDoc('DatabaseDiv')">Database</button>
+            <button class="tabs" onclick="displayDoc('KVSDiv')">KeyValueStore</button>
+            <button class="tabs" onclick="displayDoc('TSSDiv')">TextSearchStore</button>
+            <button class="tabs" onclick="displayDoc('LicenseDiv')">License</button>
+        </div>
+        <div id="MainDiv" style="display: block;">
+            <br>
+            <h2>SidecarStorage</h2>
+
+            <br>
+            <h3>Overview</h3>
+            <hr>
+            SidecarStorage provides data structures that offer capabilities expected from typical in-memory database interactions such as text search suggestions.
+            <br /><br />
+            Alongside these storage focused data structures, optional data persistence is provided through a database management system like wrapper object.
+            <br><br>
+            DISCLAIMER: Stored data is not encrypted at any point and storage should not be used for any sensitive data!
+            <br><br><br>
+            <h4>Class Structure</h4>
+            <hr>
+            The focal point of the sidecarstorage library is the "DBMS" class which can be used to manage all other classes used for storage.
+            It is not mandatory to use the DBMS class but it is the only way to use the persistent storage capabilities of sidecarstorage.
+
+            <br><br>
+            The "Database" class is is used within the DBMS class to organize all created stores as well as managing which stores of data should be saved.
+            <br><br>
+            <h5>Storage data structure classes</h5>
+            <hr>
+            KeyValueStore: A Key-Value data structure for mimicking data storage by relational databases as well as noSQL depending on the usage.
+            <br><br>
+            TextSearchStore: A Text Search data structure based on a trie for quick text searches and text predictions.
+            <br><br>
+        </div>
+
+        <!--///////////////////////////////////DBMSDiv////////////////////////////////////////-->
+
+        <div id="DBMSDiv" style="display: none;">
+            <br>
+            <h2>DatabaseManager Class</h2>
+
+            <br>
+            <h3>Overview</h3>
+            <hr>
+            The DatabaseManager class is a psuedo Database Management System like class that manages data organization, saving, and loading.
+            <br />
+            The class uses a singleton pattern to ensure proper and in order processing of data especially when data is being stored to the file system or anywhere else.
+            <br>
+            The class currently only supports persistent storage of data to the local file system which is by default disabled for security.
+            <br /><br />
+            The DatabaseManager class can be imported by itself using the following
+            <hr>
+            <pre>
+import { DBMS } from "sidecarstorage";
+const dbms = new DBMS();
+            </pre>
+            <br />
+            <h4>Functions</h4>
+            <hr><br><br />
+
+            <h5>createDatabase</h5>
+            <br />
+            Usage: Creates a database object and maps it to the provided name for retrieval.
+            <br /><br />
+            Parameter: A non-empty string to serve as the key for storing and retrieving the database.
+            <br />
+            Returns: The newly created Database object.
+            <hr>
+            <pre>
+    let demoDatabase = DBMS.createDatabase("demo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>getAllDatabaseNames</h5>
+            <br />
+            Usage: Retrieves the names of all previously created Database objects that are currently loaded for use.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Array of all Database object names.
+            <hr>
+            <pre>
+    let arrayOfDatabaseNames = DBMS.getAllDatabaseNames();
+            </pre>
+            <hr><br /><br />
+
+            <h5>getDatabase</h5>
+            <br />
+            Usage: Retrieves the Database object of a previously created database mapped to the provided name.
+            "Undefined" will be returned if no currently loaded Database object maps to the provided name.
+            <br /><br />
+            Parameter: A non-empty string representing the name of a preexisting database.
+            <br />
+            Returns: A previously created Database object.
+            <hr>
+            <pre>
+    let demoDatabase = DBMS.getDatabase("demo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>deleteDatabase</h5>
+            <br />
+            Usage: Deletes the Database object of a previously created database mapped to the provided name.
+            No action will be taken if a mapping to the provided name is not found.
+            <br /><br />
+            Parameter: A non-empty string representing the name of a preexisting database.
+            <br />
+            Returns: True if a value was deleted and false otherwise.
+            <hr>
+            <pre>
+    let trueIfDataIsRemoved = DBMS.deleteDatabase("demo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>enableSavingAndLoading</h5>
+            <br />
+            Usage: Initializes data for saving and loading to and from persistent storage which is off by default.
+            <br /><br />
+            Parameter: A non-empty string representing the storage type. Currently the only opion is "LOCALDISK"
+            If no parameter is passed then LOCALDISK is used automatically.
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    DBMS.enableSavingAndLoading("LOCALDISK");
+    is equivalent to
+    DBMS.enableSavingAndLoading();
+            </pre>
+            <hr><br /><br />
+
+            <h5>disableSavingAndLoading</h5>
+            <br />
+            Usage: Disables ability to save and load data to persistent storage.
+            It does not clear any previously stored data.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    DBMS.disableSavingAndLoading();
+            </pre>
+            <hr><br /><br />
+
+            <h5>savingAndLoadingIsEnabled</h5>
+            <br />
+            Usage: Checks to see whether saving and loading to and from persistent storage is enabled.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: True if saving and loading is enabled and false otherwise.
+            <hr>
+            <pre>
+    let trueIfEnabled = DBMS.savingAndLoadingIsEnabled();
+            </pre>
+            <hr><br /><br />
+
+            <h5>loadDatabasesFromStorage</h5>
+            <br />
+            Usage: Load data from persistent storage only if the DBMS object has no data to avoid overwriting and loss of data.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: True if the database is loaded. Only works when the DBMS object contains no database information.
+            <hr>
+            <pre>
+    let trueIfDatabasesAreLoaded = DBMS.loadDatabasesFromStorage();
+            </pre>
+            <hr><br /><br />
+
+            <h5>forceLoadDatabasesFromStorage</h5>
+            <br />
+            Usage: Load data from persistent storage regardless of the current state of the DBMS object.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    DBMS.forceLoadDatabasesFromStorage();
+            </pre>
+            <hr><br /><br />
+
+            <h5>saveDatabasesToStorage</h5>
+            <br />
+            Usage: Save data to persistent storage.
+            <br /><br />
+            parameter: None
+            <br />
+            returns: Nothing
+            <hr>
+            <pre>
+    let demoDatabase = DBMS.saveDatabasesToStorage();
+            </pre>
+            <hr>
+            <br><br>
+
+            <h5>deleteAllStoredData</h5>
+            <br />
+            Usage: Delete all data from persistent storage.
+            <br /><br />
+            parameter: nothing
+            <br />
+            returns: nothing
+            <hr>
+            <pre>
+    DBMS.deleteAllStoredData();
+            </pre>
+            <hr>
+            <br><br>
+        </div>
+
+        <!--///////////////////////////////////DatabaseDiv////////////////////////////////////////-->
+
+        <div id="DatabaseDiv" style="display: none;">
+            <br>
+            <h2>Database Class</h2>
+
+            <br>
+            <h3>Overview</h3>
+            <hr>
+            The Database class is the organizational object for all created stores.
+            This allows for both logical separation from a development perspective and also organized saving and loading of data.
+            <br />
+            The class depends on the DatabaseManager (DBMS) class for creation and mapping so it cannot be imported by itself.
+            <br>
+            The Database class allows for saving per object, which is enabled by default, rather than all Databases present in the DMBS object.
+            <br /><br />
+            Creation of this object can be done as shown below.
+            <hr>
+            <pre>
+let demoDatabase = DBMS.createDatabase("demo");
+            </pre>
+            <br />
+            <br />
+            <h4>Functions</h4>
+            <hr><br><br />
+
+            <h5>createKeyValueStore</h5>
+            <br />
+            Usage: Creates a KeyValueStore object and maps it to the provided name for retrieval.
+            <br /><br />
+            2 Parameters: The first parameter is a non-empty string to serve as the key for storing and retrieving the KeyValueStore object.
+            <br />
+            The second is an array of non-empty strings serving as the keys for storage.
+            <br />
+            Returns: The newly created KeyValueStore object.
+            <hr>
+            <pre>
+    let KVSObject = demoDatabase.createKeyValueStore("KVSDemo", ["key1", "key2"]);
+            </pre>
+            <hr><br /><br />
+
+            <h5>createTextSearchStore</h5>
+            <br />
+            Usage: Creates a TextSearchStore object and maps it to the provided name for retrieval.
+            <br /><br />
+            Parameter: A non-empty string to serve as the key for storing and retrieving the TextSearchStore object.
+            <br />
+            Returns: The newly created TextSearchStore object.
+            <hr>
+            <pre>
+    let TSSObject = demoDatabase.createTextSearchStore("TSSDemo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>getKeyValueStoreNames</h5>
+            <br />
+            Usage: Retrieves the names of all previously created KeyValueStore objects that are currently loaded for use.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Array of all KeyValueStore object names.
+            <hr>
+            <pre>
+    let arrayOfKVSObjectNames = demoDatabase.getKeyValueStoreNames();
+            </pre>
+            <hr><br /><br />
+
+            <h5>getTextSearchStoreNames</h5>
+            <br />
+            Usage: Retrieves the names of all previously created TextSearchStore objects that are currently loaded for use.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Array of all TextSearchStore object names.
+            <hr>
+            <pre>
+    let arrayOfTSSObjectNames = demoDatabase.getTextSearchStoreNames();
+            </pre>
+            <hr><br /><br />
+
+            <h5>getAllStoreNames</h5>
+            <br />
+            Usage: Retrieves the names of all previously created Store objects that are currently loaded for use.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Array of all Store object names
+            <hr>
+            <pre>
+    let arrayOfStoreObjectNames = demoDatabase.getAllStoreNames();
+            </pre>
+            <hr><br /><br />
+
+            <h5>getKeyValueStore</h5>
+            <br />
+            Usage: Retrieves the KeyValueStore object of a previously created KeyValueStore mapped to the provided name.
+            "Undefined" will be returned if the currently loaded does not have a KeyValueStore that maps to the provided name.
+            <br /><br />
+            Parameter: A non-empty string representing the name of a preexisting KeyValueStore.
+            <br />
+            Returns: A previously created KeyValueStore object.
+            <hr>
+            <pre>
+    let KVSObject = demoDatabase.getKeyValueStore("KVSDemo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>getTextSearchStore</h5>
+            <br />
+            Usage: Retrieves the TextSearchStore object of a previously created TextSearchStore mapped to the provided name.
+            "Undefined" will be returned if the currently loaded does not have a TextSearchStore that maps to the provided name.
+            <br /><br />
+            Parameter: A non-empty string representing the name of a preexisting TextSearchStore.
+            <br />
+            Returns: A previously created TextSearchStore object.
+            <hr>
+            <pre>
+    let TSSObject = demoDatabase.getTextSearchStore("TSSDemo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>deleteKeyValueStore</h5>
+            <br />
+            Usage: Deletes the KeyValueStore object of a previously created KeyValueStore mapped to the provided name.
+            No action will be taken if a mapping to the provided name is not found.
+            <br /><br />
+            Parameter: A non-empty string representing the name of a preexisting KeyValueStore object.
+            <br />
+            Returns: True if the stoe is deleted and false otherwise.
+            <hr>
+            <pre>
+    let trueIfDataIsRemoved = demoDatabase.deleteKeyValueStore("KVSDemo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>deleteTextSearchStore</h5>
+            <br />
+            Usage: Deletes the TextSearchStore object of a previously created TextSearchStore mapped to the provided name.
+            No action will be taken if a mapping to the provided name is not found.
+            <br /><br />
+            Parameter: A non-empty string representing the name of a preexisting TextSearchStore object.
+            <br />
+            Returns: True if the store is deleted and false otherwise.
+            <hr>
+            <pre>
+    let trueIfDataIsRemoved = demoDatabase.deleteTextSearchStore("TSSDemo");
+            </pre>
+            <hr><br /><br />
+
+            <h5>needsToBeSaved</h5>
+            <br />
+            Usage: Save data to persistent storage.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: True if the database is to be saved and false otherwise.
+            <hr>
+            <pre>
+    demoDatabase.needsToBeSaved();
+            </pre>
+            <hr>
+            <br><br>
+
+            <h5>setSaveStatus</h5>
+            <br />
+            Usage: Delete all data from persistent storage.
+            <br /><br />
+            Parameter: A boolean value. True if the database should be saved and false otherwise.
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    demoDatabase.setSaveStatus(false);
+            </pre>
+            <hr>
+            <br><br>
+        </div>
+
+        <!--///////////////////////////////////KVSDiv////////////////////////////////////////-->
+
+        <div id="KVSDiv" style="display: none;">
+            <br>
+            <h2>KeyValueStore Class</h2>
+
+            <br>
+            <h3>Overview</h3>
+            <hr>
+            The KeyValueStore class is a data structure that allows for mimicking data storage in relational database table as well as a noSQL document type database.
+            <br />
+            The class uses one or more keys to map to data without restriction on the type of the data being stored as long as it can be serialized using JSON.stringify and JSON.parse.
+            <br /><br />
+            The KeyValueStore class can be imported by itself using the following.
+            <hr>
+            <pre>
+import { KeyValueStore } from "sidecarstorage";
+let KVSObject = new KeyValueStore();
+            </pre>
+            <br />
+            <h4>Functions</h4>
+            <hr><br><br />
+
+            <h5>add</h5>
+            <br />
+            Usage: Adds any type of serializable data to the KeyValueStore object based on provided keys.
+            <br /><br />
+            2 Parameters: The first parameter is any type of serializable data which cannot be "undefined".
+            <br />
+            The second parameter must be an object that maps all keys originally provided during creation of the KeyValueStore object to non-empty strings.
+            <br />
+            Returns: True if the data is added and false otherwise.
+            <hr>
+            <pre>
+    let KVSObject = new KeyValueStore(["key1", "key2"]);
+    let keyObject = { key1: "demo1", key2: "demo2" };
+    let trueIfDataIsAdded = KVSObject.add(keyObject, 3);
+            </pre>
+            <hr><br /><br />
+
+            <h5>read</h5>
+            <br />
+            Usage: Retrieves the data associated with the provided keys.
+            <br /><br />
+            Parameter: An object that maps all keys originally provided during creation of the KeyValueStore object to non-empty strings.
+            <br />
+            Returns: The data corresponding the the provided keys. If the provided keys do not exist then undefined is returned.
+            <hr>
+            <pre>
+    let keyObject = { key1: "demo1", key2: "demo2" };
+    let dataMappedToKeys = KVSObject.read(keyObject);
+            </pre>
+            <hr><br /><br />
+
+            <h5>readAll</h5>
+            <br />
+            Usage: Retrieve all data present in the KeyValueStore object
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: All data values present in the KeyValueStore object as an array.
+            <hr>
+            <pre>
+    let arrayOfValues = KVSObject.readAll();
+            </pre>
+            <hr><br /><br />
+
+            <h5>update</h5>
+            <br />
+            Usage: Updates any type of serializable data to the KeyValueStore object associated with the provided keys. If the keys have never been added before "update" will take no action.
+            <br /><br />
+            2 Parameters: Any type of serializable data. Cannot be undefined. The second parameter must be an object that maps all keys originally provided
+            during creation of the KeyValueStore object to non-empty strings.
+            <br />
+            Returns: True if the data is updated and false otherwise.
+            <hr>
+            <pre>
+    let KVSObject = new KeyValueStore(["key1", "key2"]);
+    let keyObject = { key1: "demo1", key2: "demo2" };
+    let trueIfDataIsAdded = KVSObject.add(keyObject, 3);
+    let trueIfDataIsUpdated = KVSObject.update(keyObject, "new data");
+            </pre>
+            <hr><br /><br />
+
+            <h5>addOrUpdate</h5>
+            <br />
+            Usage: Adds or updates any type of serializable data to the KeyValueStore object based on provided keys.
+            <br /><br />
+            2 Parameters: The first parameter is any type of serializable data which cannot be "undefined".
+            <br /> 
+            The second parameter must be an object that maps all keys originally provided during creation of the KeyValueStore object to non-empty strings.
+            <br />
+            Returns: True if the data is added/updated and false otherwise.
+            <hr>
+            <pre>
+    let KVSObject = new KeyValueStore(["key1", "key2"]);
+    let keyObject = { key1: "demo1", key2: "demo2" };
+    let trueIfDataIsAdded = KVSObject.addOrUpdate(keyObject, 3);
+    let trueIfDataIsUpdated = KVSObject.addOrUpdate(keyObject, "new data");
+            </pre>
+            <hr><br /><br />
+
+            <h5>delete</h5>
+            <br />
+            Usage: Removes the data associated with the provided keys as well as the keys.
+            <br /><br />
+            Parameter: An object that maps all keys originally provided during creation of the KeyValueStore object to non-empty strings.
+            <br />
+            Returns: True if the data is deleted and false otherwise.
+            <hr>
+            <pre>
+    let keyObject = { key1: "demo1", key2: "demo2" };
+    let trueIfDataIsRemoved = KVSObject.delete(keyObject);
+            </pre>
+            <hr><br /><br />
+
+            <h5>conditionalRead</h5>
+            <br />
+            Usage: Retrieves the values that cause the provided search function to return true.
+            <br /><br />
+            Parameter: A function that returns a boolean value. True should be returned when value meets search expectations.
+            <br />
+            Returns: An array of values that match the search function criteria.
+            <hr>
+            <pre>
+    let KVSObject = new KeyValueStore(["key1", "key2"]);
+
+    let keyObject1 = { key1: "check", key2: "check2" };
+    let keyObject2 = { key1: "check2", key2: "check3" };
+
+    let dataObject1 = { test: 'x' };
+    let dataObject2 = { test: 'y' };
+
+    KVSObject.add(keyObject1, dataObject1);
+    KVSObject.add(keyObject2, dataObject2);
+
+    var searchFunction = function (data) {
+        if (data.test == 'x')
+            return true;
+    }
+
+    let arrayOfApplciableValues = KVSObject.conditionalRead(searchFunction); // Will be { test: 'x' };
+            </pre>
+            <hr><br /><br />
+
+            <h5>conditionalDelete</h5>
+            <br />
+            Usage: Deletes the values that cause the provided search function to return true.
+            <br /><br />
+            Parameter: A function that returns a boolean value. True should be returned when value meets search expectations.
+            <br />
+            Returns: The number of records deleted. 0 will be returned if no deletions take place.
+            <hr>
+            <pre>
+    let KVSObject = new KeyValueStore(["key1", "key2"]);
+
+    let keyObject1 = { key1: "check", key2: "check2" };
+    let keyObject2 = { key1: "check2", key2: "check3" };
+
+    let dataObject1 = { test: 'x' };
+    let dataObject2 = { test: 'y' };
+
+    KVSObject.add(keyObject1, dataObject1);
+    KVSObject.add(keyObject2, dataObject2);
+
+    var searchFunction = function (data) {
+        if (data.test == 'x')
+            return true;
+    }
+
+    let numberOfDeletedRecords = KVSObject.conditionalDelete(searchFunction); // Will be 1;
+            </pre>
+            <hr><br /><br />
+
+            <h5>getNumberOfEntries</h5>
+            <br />
+            Usage: Return the number of entries in the KeyValueStore object.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Number of entries.
+            <hr>
+            <pre>
+    let KVSObject = new KeyValueStore(["key1", "key2"]);
+    KVSObject.getNumberOfEntries();
+            </pre>
+            <hr><br /><br />
+        </div>
+
+        <!--///////////////////////////////////TSSDiv////////////////////////////////////////-->
+
+        <div id="TSSDiv" style="display: none;">
+            <br>
+            <h2>TextSearchStore Class</h2>
+
+            <br>
+            <h3>Overview</h3>
+            <hr>
+            The TextSearchStore class is a data structure that allows for text search and search suggestion functionality based on a trie structure.
+            <br />
+            The class only allows characters with ASCII values between 32 and 126 to protect data integrity and security.
+            <br />
+            The range is also limited since storing strings across large alphabets can result in large memory usage.
+            <br /><br />
+            The class defines a max number of strings that can be stored before strings are deleted based on a specified priority.
+            <br />
+            The default deletion priority is to delete the Least Recently Used (LRU) strings.
+            <br />
+            Similarly reading from the trie structure is done by read priority which is the Most Recently Used (MRU) by default.
+            <br />
+            The allowed configurable priorites for reading and deleting are "MRU", "LRU", "Shortest", "Longest", "Lexicographically"
+            <br /><br />
+            The TextSearchStore class can be imported by itself using the following
+            <hr>
+            <pre>
+import { TextSearchStore } from "sidecarstorage";
+let TSSObject = new TextSearchStore();
+            </pre>
+            <br />
+            <h4>Functions</h4>
+            <hr><br><br />
+
+            <h5>addString</h5>
+            <br />
+            Usage: Adds a string into the TextSearchStore object.
+            <br /><br />
+            Parameter: A non-empty string only contiaining character with ASCII values between 32 and 126.
+            <br />
+            Returns: True if the value is added and false otherwise.
+            <hr>
+            <pre>
+    let TSSObject = new TextSearchStore();
+    let trueIfStringIsAdded = TSSObject.addString("test");
+            </pre>
+            <hr><br /><br />
+
+            <h5>containsString</h5>
+            <br />
+            Usage: Check if the provided string is present in the TextSearchStore object.
+            <br /><br />
+            Parameter: A non-empty string only contiaining character with ASCII values between 32 and 126.
+            <br />
+            Returns: True if the string is found and false otherwise.
+            <hr>
+            <pre>
+    let TSSObject = new TextSearchStore();
+    let trueIfStringIsAdded = TSSObject.addString("test");
+    let trueIfStringIsPresent = TSSObject.containsString("test");
+            </pre>
+            <hr><br /><br />
+
+            <h5>deleteStringsBasedOnPriority</h5>
+            <br />
+            Usage: A number of strings will be removed from the TextSearchStore object based on the specified values controlled by the
+            setMaxDeletionLimit function. By default up to 100 strings will be removed at once.
+            This function is used internally when adding strings and the max number of strings has been reached.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    TSSObject.deleteStringsBasedOnPriority();
+            </pre>
+            <hr><br /><br />
+
+            <h5>deleteString</h5>
+            <br />
+            Usage: Deletes a provided non-empty string from the TextSearchStore object.
+            <br /><br />
+            Parameter: A non-empty string only contiaining character with ASCII values between 32 and 126.
+            <br />
+            Returns: True if a value was deleted and false otherwise.
+            <hr>
+            <pre>
+    let trueIfDataIsRemoved = TSSObject.deleteString("test");
+            </pre>
+            <hr><br /><br />
+
+            <h5>getPossibleMatches</h5>
+            <br />
+            Usage: Based on a provided non-empty prefix string, all entered strings that start with that prefix will be returned
+            up to the value set by setMaxReadLimit in the order set by changeReadPriority.
+            The default limit is defined by the built in Javascript Number.MAX_SAFE_INTEGER and the default order is Most Recently Used (MRU).
+            <br /><br />
+            Parameter: A non-empty string representing the prefix to be matched.
+            <br />
+            Returns: An array of non-empty strings containing the provided prefix.
+            <hr>
+            <pre>
+    let TSSObject = new TextSearchStore();
+    TSSObject.addString("test");
+    TSSObject.addString("testing");
+    TSSObject.addString("test2");
+    TSSObject.addString("second");
+    let arrayOfStrings = TSSObject.getPossibleMatches("t"); // Will return ["test", "testing", "test2"]
+            </pre>
+            <hr><br /><br />
+
+            <h5>setMaxReadLimit</h5>
+            <br />
+            Usage: Sets the maximum number of strings that can be deleted when using the "getPossibleMatches" function.
+            <br /><br />
+            2 Parameters: The first parameter decides the limit for how many strings will be read.
+            The second parameter can either be the strings "AMOUNT" or "PERCENTAGE" determining how the limit will be decided. If a second parameter is not provided it will default to "AMOUNT"
+            If the first parameter is 10 and the second is "AMOUNT", then the max number of strings that can be returned is 10.
+            If the first parameter is 10 and the second is "PERCENTAGE", then the max number of strings that can be returned is 10 percent of the total number of strings in the TextSearchStore object.
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    TSSObject.setMaxReadLimit(2);
+    is equivalent to
+    TSSObject.setMaxReadLimit(2, "AMOUNT");
+    and if the total number of strings is 4, then it is also equivalent to
+    TSSObject.setMaxReadLimit(50, "PERCENTAGE");
+            </pre>
+            <hr><br /><br />
+
+            <h5>setMaxDeletionLimit</h5>
+            <br />
+            Usage: Sets the maximum number of strings that can be returned when using the "deleteStringsBasedOnPriority" function.
+            <br /><br />
+            2 Parameters: The first parameter decides the limit for how many strings will be deleted.
+            The second parameter can either be the strings "AMOUNT" or "PERCENTAGE" determining how the limit will be decided. If a second parameter is not provided it will default to "AMOUNT"
+            If the first parameter is 10 and the second is "AMOUNT", then the max number of strings that can be deleted is 10.
+            If the first parameter is 10 and the second is "PERCENTAGE", then the max number of strings that can be deleted is 10 percent of the total number of strings in the TextSearchStore object.
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    TSSObject.setMaxDeletionLimit(2);
+    //  is equivalent to
+    TSSObject.setMaxDeletionLimit(2, "AMOUNT");
+    // and if the total number of strings is 4, then it is also equivalent to
+    TSSObject.setMaxDeletionLimit(50, "PERCENTAGE");
+            </pre>
+            <hr><br /><br />
+
+            <h5>setMaxNumberOfStrings</h5>
+            <br />
+            Usage: Set the maximum number of strings that can be retained in the TextSearchStore object before automatic deletion based on priority is triggered.
+            <br /><br />
+            Parameter: A number representing the maximum number of strings allowed in the TextSearchStore object.
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    TSSObject.setMaxNumberOfStrings(5);
+            </pre>
+            <hr><br /><br />
+
+            <h5>getAllStrings</h5>
+            <br />
+            Usage: Retrieves every string that is currently present in the TextSearchStore object.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: An array containing all strings in the TextSearchStore object.
+            <hr>
+            <pre>
+    TSSObject.getAllStrings();
+            </pre>
+            <hr><br /><br />
+
+            <h5>getNumberOfStrings</h5>
+            <br />
+            Usage: Retrieves the number of strings currently present in the TextSearchStore object.
+            <br /><br />
+            Parameter: None
+            <br />
+            Returns: The number of stings in the TextSearchStore object.
+            <hr>
+            <pre>
+    TSSObject.getNumberOfStrings();
+            </pre>
+            <hr>
+            <br><br>
+
+            <h5>changeDeletionPriority</h5>
+            <br />
+            Usage: Set the priority for which strings should be deleted first if needed.
+            This function involves sorting of all of the strings which is an expensive operation when the number of strings is large.
+            <br /><br />
+            Parameter: A string matching one of the following allowed priorities: "MRU", "LRU", "Shortest", "Longest", "Lexicographically".
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    let TSSObject = new TextSearchStore();
+    TSSObject.addString("test");
+    TSSObject.addString("testing");
+    TSSObject.addString("test2");
+    TSSObject.addString("second");
+
+    TSSObject.setMaxDeletionLimit(50, "PERCENTAGE");
+    TSSObject.changeDeletionPriority("Longest");
+    TSSObject.setMaxNumberOfStrings(3);
+
+    TSSObject.addString("test1");
+
+    let arrayOfStrings = TSSObject.getPossibleMatches("t"); // Will return ["test", "test1"]
+            </pre>
+            <hr>
+            <br><br>
+
+            <h5>changeReadPriority</h5>
+            <br />
+            Usage: Set the priority for which strings should be read first.
+            This function involves sorting of all of the strings which is an expensive operation when the number of strings is large.
+            <br /><br />
+            Parameter: A string matching one of the following allowed priorities: "MRU", "LRU", "Shortest", "Longest", "Lexicographically".
+            <br />
+            Returns: Nothing
+            <hr>
+            <pre>
+    let TSSObject = new TextSearchStore();
+    TSSObject.addString("test");
+    TSSObject.addString("testing");
+    TSSObject.addString("test2");
+    TSSObject.addString("second");
+
+    TSSObject.changeReadPriority("Shortest");
+
+    let arrayOfStrings = TSSObject.getPossibleMatches("t"); // Will return ["test", "test2", "testing"]
+            </pre>
+            <hr>
+            <br><br>
+        </div>
+
+        <!--///////////////////////////////////LicenseDiv////////////////////////////////////////-->
+
+        <div id="LicenseDiv" style="display: none;">
+            <br>
+            <h2>SidecarStorage License</h2>
+
+            <br>
+            <pre>
+
+MIT License
+
+Copyright (c) 2024 Neil Runcie
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+        </div>
+    </div>
+
+    <script>
+        var pages = ["MainDiv", "DBMSDiv", "DatabaseDiv", "KVSDiv", "TSSDiv", "LicenseDiv"];
+        function clearDivs() {
+            for (var i = 0; i < pages.length; i++) {
+                var content = document.getElementById(pages[i]);
+                if (content != undefined)
+                    content.style.display = "none";
+            }
+        }
+        function displayDoc(content) {
+            clearDivs();
+
+            var mainContentName = "MainDiv";
+            if (pages.includes(content)) {
+                
+                mainContentName = content;
+                console.log(content);
+            }
+            var mainContent = document.getElementById(mainContentName);
+            if (mainContent == undefined) {
+                mainContent = document.getElementById("MainDiv");
+            }
+
+            mainContent.style.display = "block";
+        }
+    </script>
+
+</body>
