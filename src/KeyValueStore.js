@@ -126,6 +126,8 @@ export class KeyValueStore {
 
         if (this.map.has(keyString))
             return this.map.delete(keyString);
+
+        return false;
     }
 
     // Read data from store by calling passed searchCondition function on each data element

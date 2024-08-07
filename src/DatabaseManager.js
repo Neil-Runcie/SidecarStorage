@@ -59,8 +59,9 @@ export class DatabaseManager {
 
         if (this.databases.has(name)) {
             this.databases.delete(name);
-            this.databasesToBeDeleted.add(name);
+            return this.databasesToBeDeleted.add(name);
         }
+        return false;
     }
 
 
@@ -74,6 +75,11 @@ export class DatabaseManager {
             // Parameter validation is handled by storage object
             this.storageHandler = new DataStorage(storageMethod);
         }
+    }
+
+    disableSavingAndLoading() {
+        this.saveAndLoadEnabled = false;
+        this.storageHandler = {};
     }
 
     savingAndLoadingIsEnabled() {

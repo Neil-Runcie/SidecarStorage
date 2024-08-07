@@ -192,7 +192,7 @@ export class TextSearchStore {
             return [];
 
         // Get the maximum number of strings to read and also grab the list of strings to read
-        let numberOfStringsToRead = getNumberOfStringsToRead(nodeTraverser.descriptorsForReading, this.maxReadLimit, this.readMethod);
+        let numberOfStringsToRead = getNumberOfStringsToRead(nodeTraverser.descriptorsForReading, this.descriptorsForDeletion.length, this.maxReadLimit, this.readMethod);
         let listOfStrings = nodeTraverser.descriptorsForReading.map((descriptor) => { return descriptor.string });
 
         // Return the specified amount of strings in reverse from the end of the list due to reversed sorting
@@ -452,7 +452,7 @@ function getNumberOfStringsToDelete(descriptorsForDeletion, maxDeletionLimit, de
 }
 
 // getNumberOfStringsToDelete calculates the correct number of strings to read based on read method and the number of descriptorsForReading present
-function getNumberOfStringsToRead(descriptorsForReading, maxReadLimit, readMethod) {
+function getNumberOfStringsToRead(descriptorsForReading, totalNumberOfStrings, maxReadLimit, readMethod) {
     let numberOfStringsToRead = 0;
 
     if (readMethod == "AMOUNT") {
@@ -461,7 +461,7 @@ function getNumberOfStringsToRead(descriptorsForReading, maxReadLimit, readMetho
             numberOfStringsToRead = descriptorsForReading.length;
     }
     else if (readMethod == "PERCENTAGE") {
-        numberOfStringsToRead = Math.ceil((maxReadLimit * .01) * descriptorsForReading.length);
+        numberOfStringsToRead = Math.ceil((maxReadLimit * .01) * totalNumberOfStrings);
         if (numberOfStringsToRead > descriptorsForReading.length)
             numberOfStringsToRead = descriptorsForReading.length;
     }
